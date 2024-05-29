@@ -6,8 +6,8 @@ public:
     Mosaify();
 
     // Declare copy constructor and assignment operator as deleted to prevent copying
-    Mosaify(const Mosaify&) = delete;
-    Mosaify& operator=(const Mosaify&) = delete;
+//    Mosaify(const Mosaify&) = delete;
+//    Mosaify& operator=(const Mosaify&) = delete;
 
     void setTileSize(int tileSize);
 

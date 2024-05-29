@@ -7,14 +7,14 @@ set(CMAKE_MODULE_PATH "/System/Volumes/Data/usr/local/Cellar/cmake/3.27.7/share/
 
 # Mosaify target
 add_subdirectory(glm)
-add_library(Mosaify STATIC Mosaify.cpp Image.cpp)
+add_library(Mosaify STATIC example.cpp)
 target_include_directories(Mosaify
         INTERFACE public
 #        PUBLIC details_public
         PRIVATE ${GLM_INCLUDE_DIRS})
 target_link_libraries(
         Mosaify
-        glm::glm
+#        glm::glm
 )
 
 # MosaifyPy
@@ -23,18 +23,18 @@ find_program(SWIG_PATH swig)
 find_package(SWIG 4.2.1 COMPONENTS python)
 include(UseSWIG)
 find_package (Python3 COMPONENTS Interpreter Development)
-set_source_files_properties(MosaifyPy.i PROPERTIES CPLUSPLUS ON)
-set_property(SOURCE MosaifyPy.i PROPERTY SWIG_MODULE_NAME MosaifyPy)
+set_source_files_properties(example.i PROPERTIES CPLUSPLUS ON)
+set_property(SOURCE example.i PROPERTY SWIG_MODULE_NAME example)
 set (UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
-swig_add_library(MosaifyPy
-        TYPE SHARED
+swig_add_library(example
+        TYPE MODULE
         LANGUAGE python
-        SOURCES MosaifyPy.i
+        SOURCES example.i
 )
-target_include_directories(MosaifyPy
+target_include_directories(example
         PRIVATE ${Python3_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR})
 target_link_libraries(
-        MosaifyPy
+        example
         Mosaify
         ${Python3_LIBRARIES}
 )
