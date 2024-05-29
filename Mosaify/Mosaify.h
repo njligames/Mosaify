@@ -5,6 +5,11 @@ class Mosaify {
 public:
     Mosaify();
 
+//    # Python code example
+//    import MosaifyPy
+//    t = MosaifyPy.Mosaify()
+//    t.setTileSize(8)
+
     // Declare copy constructor and assignment operator as deleted to prevent copying
 //    Mosaify(const Mosaify&) = delete;
 //    Mosaify& operator=(const Mosaify&) = delete;

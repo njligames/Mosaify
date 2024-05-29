@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.27.7)
 project(Mosaify)
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    SET(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH "My Comment" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,14 +10,14 @@ set(CMAKE_MODULE_PATH "/System/Volumes/Data/usr/local/Cellar/cmake/3.27.7/share/
 
 # Mosaify target
 add_subdirectory(glm)
-add_library(Mosaify STATIC example.cpp)
+add_library(Mosaify STATIC Image.cpp Mosaify.cpp)
 target_include_directories(Mosaify
         INTERFACE public
 #        PUBLIC details_public
         PRIVATE ${GLM_INCLUDE_DIRS})
 target_link_libraries(
         Mosaify
-#        glm::glm
+        glm::glm
 )
 
 # MosaifyPy
@@ -22,19 +25,20 @@ include(FindSWIG)
 find_program(SWIG_PATH swig)
 find_package(SWIG 4.2.1 COMPONENTS python)
 include(UseSWIG)
-find_package (Python3 COMPONENTS Interpreter Development)
-set_source_files_properties(example.i PROPERTIES CPLUSPLUS ON)
-set_property(SOURCE example.i PROPERTY SWIG_MODULE_NAME example)
+# https://cmake.org/cmake/help/v3.28/module/FindPython3.html#module:FindPython3
+find_package (Python3 COMPONENTS Interpreter Development REQUIRED)
+set_source_files_properties(MosaifyPy.i PROPERTIES CPLUSPLUS ON)
+set_property(SOURCE MosaifyPy.i PROPERTY SWIG_MODULE_NAME MosaifyPy)
 set (UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
-swig_add_library(example
+swig_add_library(MosaifyPy
         TYPE MODULE
         LANGUAGE python
-        SOURCES example.i
+        SOURCES MosaifyPy.i
 )
-target_include_directories(example
+target_include_directories(MosaifyPy
         PRIVATE ${Python3_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR})
 target_link_libraries(
-        example
+        MosaifyPy
         Mosaify
         ${Python3_LIBRARIES}
 )
@@ -61,4 +65,22 @@ target_link_libraries(
 
 include(GoogleTest)
 gtest_discover_tests(hello_test)
+
+install(TARGETS Mosaify hello_test
+        ARCHIVE DESTINATION Mosaify/lib
+        LIBRARY DESTINATION Mosaify/lib
+        RUNTIME DESTINATION Mosaify/bin
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MosaifyPy.py
+        DESTINATION Mosaify/example)
+
+#set(CMAKE_INSTALL_PYTHON_LIBDIR "${CMAKE_SOURCE_DIR}/example")
+install(TARGETS MosaifyPy DESTINATION Mosaify/example)
+
+FILE(WRITE ${CMAKE_BINARY_DIR}/Mosaify/example/main.py
+        "# Python code example\n"
+        "import MosaifyPy\n"
+        "t = MosaifyPy.Mosaify()\n"
+        "t.setTileSize(8)\n"
+)
 
