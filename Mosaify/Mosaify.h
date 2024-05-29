@@ -1,18 +1,18 @@
 #ifndef MOSAICIMAGECREATOR_LIBRARY_H
 #define MOSAICIMAGECREATOR_LIBRARY_H
 
+typedef unsigned int uint32;
+typedef unsigned char uint8;
+
+typedef struct simple_image_t {
+    uint32 rows;
+    uint32 cols;
+    uint8 *imgdata;
+} simple_image;
+
 class Mosaify {
 public:
     Mosaify();
-
-//    # Python code example
-//    import MosaifyPy
-//    t = MosaifyPy.Mosaify()
-//    t.setTileSize(8)
-
-    // Declare copy constructor and assignment operator as deleted to prevent copying
-//    Mosaify(const Mosaify&) = delete;
-//    Mosaify& operator=(const Mosaify&) = delete;
 
     void setTileSize(int tileSize);
 
@@ -21,6 +21,7 @@ public:
                       int components,
                       unsigned char *data);
     void addTileImage(const char *file);
+    void addTileImage(const simple_image* si);
 
     bool generate(int width,
                   int height,
