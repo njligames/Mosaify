@@ -3,6 +3,7 @@ project(Mosaify)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_MODULE_PATH "/System/Volumes/Data/usr/local/Cellar/cmake/3.27.7/share/cmake/Modules/")
 
 # Mosaify target
 add_subdirectory(glm)
@@ -18,30 +19,13 @@ target_link_libraries(
 
 # MosaifyPy
 include(FindSWIG)
-
 find_program(SWIG_PATH swig)
-find_package(SWIG 4.0 COMPONENTS python)
-
+find_package(SWIG 4.2.1 COMPONENTS python)
 include(UseSWIG)
-
-set(CMAKE_MODULE_PATH "/System/Volumes/Data/usr/local/Cellar/cmake/3.27.7/share/cmake/Modules/")
-message(STATUS "This is the path ${CMAKE_MODULE_PATH}")
-#find_package(PythonLibs REQUIRED)
-#find_package(PythonInterp ${PYTHONLIBS_VERSION_STRING} REQUIRED)
-set(CMAKE_SWIG_FLAGS -py3)
 find_package (Python3 COMPONENTS Interpreter Development)
-
-message(STATUS "dirs ${Python3_INCLUDE_DIRS}")
-
-
-
-
-
-
 set_source_files_properties(MosaifyPy.i PROPERTIES CPLUSPLUS ON)
 set_property(SOURCE MosaifyPy.i PROPERTY SWIG_MODULE_NAME MosaifyPy)
 set (UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
-
 swig_add_library(MosaifyPy
         TYPE SHARED
         LANGUAGE python
@@ -54,12 +38,6 @@ target_link_libraries(
         Mosaify
         ${Python3_LIBRARIES}
 )
-
-
-
-
-
-
 
 # Testing Mosaify target
 include(FetchContent)
