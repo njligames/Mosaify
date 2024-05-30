@@ -9,7 +9,10 @@
  - [Contributing](#contributing)
 
 ## About
-Could you write about 1-2 paragraphs describing the purpose of your project?
+Could you write about 1-2 paragraphs describing the purpose of your project? 
+
+Might use this for creating a tiled image: https://legacy.imagemagick.org/Usage/montage/
+
 
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing.
