@@ -22,6 +22,12 @@ namespace NJLIC {
     class Image;
 }
 
+class ImageFileLoader {
+public:
+    static const NJLIC::Image *load(const string &filename);
+    static void write(const string &filename, const NJLIC::Image *img);
+};
+
 class Mosaify {
 public:
     typedef pair<int, int> Indices;
@@ -32,9 +38,10 @@ private:
     uint8 mTileSize;
 
     MosaicMap mMosaicMap;
+    NJLIC::Image *mMosaicImage;
 
     int getMaxThreads()const;
-    NJLIC::Image *resizeImage(const NJLIC::Image *img)const;
+    const NJLIC::Image *resizeImage(const NJLIC::Image *img)const;
 public:
     Mosaify();
     ~Mosaify();
@@ -44,8 +51,10 @@ public:
     uint32 addTileImage(int width,
                       int height,
                       int components,
-                      uint8 *data);
-    uint32 addTileImage(const simple_image* si);
+                      uint8 *data,
+                      const char *filepath);
+    uint32 addTileImage(const simple_image* si,
+                        const char *filepath);
 
     simple_image *getTileImage(uint32 idx)const;
 
@@ -55,7 +64,8 @@ public:
                   unsigned char *data);
     bool generate(const simple_image *si);
 
-    const char * getMosaicMap()const;
+    const NJLIC::Image *getMosaicImage()const;
+    const char *getMosaicMap()const;
 };
 
 #endif //MOSAICIMAGECREATOR_LIBRARY_H

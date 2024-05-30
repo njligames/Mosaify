@@ -19,6 +19,31 @@
 using json = nlohmann::json;
 using Image = NJLIC::Image;
 
+const Image *ImageFileLoader::load(const string& filename) {
+
+    int width, height, channels;
+    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &channels, 0);
+    if (!data) {
+        throw runtime_error("Failed to load image: " + filename);
+    }
+
+    Image *image = new Image ;
+    image->copyData(data, width, height, channels, filename);
+
+    stbi_image_free(data);
+
+    return image;
+}
+
+void ImageFileLoader::write(const string &filename, const Image *img) {
+    stbi_write_png(filename.c_str(),
+                   img->getWidth(),
+                   img->getHeight(),
+                   img->getNumberOfComponents(),
+                   img->getDataPtr(),
+                   img->getNumberOfComponents() * img->getWidth());
+}
+
 // Define a global mutex to protect the image map
 static mutex imageMapMutex;
 
@@ -64,13 +89,13 @@ static double calculateSimilarity(const Image *target, int image1OffsetX, int im
 }
 
 // Define a function to generate a mosaic image
-static Image &generateMosaic(const Image *targetImage, const vector<Image*>& images, int tileSize, int numThreads, Mosaify::MosaicMap &mmap) {
+static const Image &generateMosaic(const Image *targetImage, vector<Image*> &images, int tileSize, int numThreads, Mosaify::MosaicMap &mmap) {
     int targetWidth = targetImage->getWidth();
     int targetHeight = targetImage->getHeight();
     int tileCols = targetWidth / tileSize;
     int tileRows = targetHeight / tileSize;
 
-    Image mosaicPixels(*targetImage);
+    static Image mosaicPixels(*targetImage);
 //    mosaicPixels.copyData(targetImagegetDataPtr(), targetImage.getWidth(), targetImage.getHeight(), targetImage.getNumberOfComponents(), targetImage.getFilename());
 
     // Create a vector to hold the similarity scores
@@ -122,9 +147,9 @@ static Image &generateMosaic(const Image *targetImage, const vector<Image*>& ima
                 }
             }
 
-            mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex]);
 
             imageMapMutex.lock();
+            mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex]);
             mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX / tileSize, tileY / tileSize), extractFilename(images[bestMatchIndex]->getFilename())));
             imageMapMutex.unlock();
         }
@@ -151,17 +176,21 @@ int Mosaify::getMaxThreads()const {
     return maxThreads;
 }
 
-Image *Mosaify::resizeImage(const Image *img)const {
+const Image *Mosaify::resizeImage(const Image *img)const {
     Image *ret = new Image(*img);
     ret->resize(mTileSize, mTileSize);
     return ret;
 }
 
-Mosaify::Mosaify() {
+Mosaify::Mosaify() :
+mTileSize(8),
+mMosaicImage(new Image())
+{
     cout << "Mosaify instance created." << endl;
 }
 
 Mosaify::~Mosaify() {
+    delete mMosaicImage;
     while (!mTileImages.empty()) {
         Image *img = mTileImages.back();
         delete img;
@@ -176,18 +205,18 @@ void Mosaify::setTileSize(int tileSize) {
 uint32 Mosaify::addTileImage(int width,
                            int height,
                            int components,
-                           uint8 *data) {
+                           uint8 *data, const char *filepath) {
     uint32 idx = mTileImages.size();
 
     Image *img = new Image();
-    img->copyData(data, width, height, components, "loaded");
+    img->copyData(data, width, height, components, filepath);
     mTileImages.push_back(img);
 
     return idx;
 }
 
-uint32 Mosaify::addTileImage(const simple_image* si) {
-    return this->addTileImage(si->rows, si->cols, si->comp, si->imgdata);
+uint32 Mosaify::addTileImage(const simple_image* si, const char *filepath) {
+    return this->addTileImage(si->rows, si->cols, si->comp, si->imgdata, filepath);
 }
 
 simple_image *Mosaify::getTileImage(uint32 idx)const {
@@ -216,20 +245,22 @@ bool Mosaify::generate(int width,
     targetImage->copyData(data, width, height, components, "loaded");
 
     // Have to resized the tiles so that it can be tiled correctly.
-    vector<Image*> resizedImages;
+//    vector<const Image*> resizedImages;
     for(auto iter = mTileImages.begin(); iter != mTileImages.end(); iter++) {
-        resizedImages.push_back(resizeImage(*iter));
+//        const Image *img = resizeImage(*iter);
+//        resizedImages.push_back(img);
+        NJLIC::Image *img = *iter;
+        img->resize(mTileSize, mTileSize);
     }
     mMosaicMap.clear();
 
-    // TODO: generate
-    Image generatedMosaicImage = generateMosaic(targetImage, resizedImages, mTileSize, numThreads, mMosaicMap);
+    *mMosaicImage = generateMosaic(targetImage, mTileImages, mTileSize, numThreads, mMosaicMap);
 
-    while(!resizedImages.empty()) {
-       Image *img = resizedImages.back();
-       delete img;
-       resizedImages.pop_back();
-    }
+//    while(!resizedImages.empty()) {
+//       const Image *img = resizedImages.back();
+//       delete img;
+//       resizedImages.pop_back();
+//    }
     delete targetImage;
 
 
@@ -249,8 +280,12 @@ bool Mosaify::generate(const simple_image *si) {
    return this->generate(si->rows, si->cols, si->comp, si->imgdata);
 }
 
-const char * Mosaify::getMosaicMap()const {
-    static string ret;
+const NJLIC::Image *Mosaify::getMosaicImage()const {
+    return mMosaicImage;
+}
+
+const char *Mosaify::getMosaicMap()const {
+    static string ret("{}");
     json j;
 
     // iterate through the MosaicMap and add each pair to the JSON object
@@ -266,7 +301,8 @@ const char * Mosaify::getMosaicMap()const {
                     });
     }
 
-    if(j.empty()) return "{}";
+    if(j.empty()) return ret.c_str();
+
     ret = j.dump();
     return ret.c_str();
 }

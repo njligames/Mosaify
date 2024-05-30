@@ -66,6 +66,7 @@ target_link_libraries(
         hello_test
         GTest::gtest_main
         Mosaify
+        glm::glm
 )
 
 include(GoogleTest)

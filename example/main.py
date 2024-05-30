@@ -18,7 +18,8 @@ mosaic = MosaifyPy.Mosaify()
 mosaic.setTileSize(8)
 
 for path in glob.glob("input/tile.input/*.jpg"):
-    mosaic.addTileImage(pil_image(path))
+	print(path)
+	mosaic.addTileImage(pil_image(path), path)
 
 path = "input/target.jpg"
 if mosaic.generate(pil_image(path)):

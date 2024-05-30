@@ -72,6 +72,24 @@ class simple_image(object):
 
 # Register simple_image in _MosaifyPy:
 _MosaifyPy.simple_image_swigregister(simple_image)
+class ImageFileLoader(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    @staticmethod
+    def load(filename):
+        return _MosaifyPy.ImageFileLoader_load(filename)
+
+    @staticmethod
+    def write(filename, img):
+        return _MosaifyPy.ImageFileLoader_write(filename, img)
+
+    def __init__(self):
+        _MosaifyPy.ImageFileLoader_swiginit(self, _MosaifyPy.new_ImageFileLoader())
+    __swig_destroy__ = _MosaifyPy.delete_ImageFileLoader
+
+# Register ImageFileLoader in _MosaifyPy:
+_MosaifyPy.ImageFileLoader_swigregister(ImageFileLoader)
 class Mosaify(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -91,6 +109,9 @@ class Mosaify(object):
 
     def generate(self, *args):
         return _MosaifyPy.Mosaify_generate(self, *args)
+
+    def getMosaicImage(self):
+        return _MosaifyPy.Mosaify_getMosaicImage(self)
 
     def getMosaicMap(self):
         return _MosaifyPy.Mosaify_getMosaicMap(self)
