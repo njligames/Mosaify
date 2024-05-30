@@ -96,7 +96,6 @@ static const Image &generateMosaic(const Image *targetImage, vector<Image*> &ima
     int tileRows = targetHeight / tileSize;
 
     static Image mosaicPixels(*targetImage);
-//    mosaicPixels.copyData(targetImagegetDataPtr(), targetImage.getWidth(), targetImage.getHeight(), targetImage.getNumberOfComponents(), targetImage.getFilename());
 
     // Create a vector to hold the similarity scores
     vector<vector<double>> similarityScores(images.size(), vector<double>(tileCols * tileRows));
@@ -147,10 +146,9 @@ static const Image &generateMosaic(const Image *targetImage, vector<Image*> &ima
                 }
             }
 
-
             imageMapMutex.lock();
             mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex]);
-            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX / tileSize, tileY / tileSize), extractFilename(images[bestMatchIndex]->getFilename())));
+            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX, tileY), images[bestMatchIndex]->getFilename()));
             imageMapMutex.unlock();
         }
     };
@@ -186,7 +184,6 @@ Mosaify::Mosaify() :
 mTileSize(8),
 mMosaicImage(new Image())
 {
-    cout << "Mosaify instance created." << endl;
 }
 
 Mosaify::~Mosaify() {
@@ -245,10 +242,7 @@ bool Mosaify::generate(int width,
     targetImage->copyData(data, width, height, components, "loaded");
 
     // Have to resized the tiles so that it can be tiled correctly.
-//    vector<const Image*> resizedImages;
     for(auto iter = mTileImages.begin(); iter != mTileImages.end(); iter++) {
-//        const Image *img = resizeImage(*iter);
-//        resizedImages.push_back(img);
         NJLIC::Image *img = *iter;
         img->resize(mTileSize, mTileSize);
     }
@@ -256,22 +250,7 @@ bool Mosaify::generate(int width,
 
     *mMosaicImage = generateMosaic(targetImage, mTileImages, mTileSize, numThreads, mMosaicMap);
 
-//    while(!resizedImages.empty()) {
-//       const Image *img = resizedImages.back();
-//       delete img;
-//       resizedImages.pop_back();
-//    }
     delete targetImage;
-
-
-//    mosaicMap_.clear();
-
-//
-//    mosaicImage_.data = (unsigned char*)sImage.getDataPtr();
-//    mosaicImage_.width = sImage.getWidth();
-//    mosaicImage_.height = sImage.getHeight();
-//    mosaicImage_.components = sImage.getNumberOfComponents();
-//    mosaicImage_.id = sImage.getFilename();
 
     return true;
 }

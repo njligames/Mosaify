@@ -2673,6 +2673,7 @@ TEST(HelloTest, BasicAssertions) {
     string base("/Users/jamesfolk/Work/MosaicImageCreator/example/input/tile.input");
     vector<string> paths = getImagePaths();
     Mosaify *mosaic = new Mosaify();
+    mosaic->setTileSize(8);
 
     for(auto iter = paths.begin(); iter != paths.end(); iter++) {
         const NJLIC::Image *tile = ImageFileLoader::load(base + "/" + *iter);
