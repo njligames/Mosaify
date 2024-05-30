@@ -14,7 +14,7 @@ add_library(Mosaify STATIC Image.cpp Mosaify.cpp)
 target_include_directories(Mosaify
         INTERFACE public
 #        PUBLIC details_public
-        PRIVATE ${GLM_INCLUDE_DIRS})
+        PRIVATE ${GLM_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR})
 target_link_libraries(
         Mosaify
         glm::glm
@@ -72,10 +72,10 @@ install(TARGETS Mosaify hello_test
         RUNTIME DESTINATION Mosaify/bin
 )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MosaifyPy.py
-        DESTINATION Mosaify/example)
+        DESTINATION ${CMAKE_SOURCE_DIR}/example)
 
 #set(CMAKE_INSTALL_PYTHON_LIBDIR "${CMAKE_SOURCE_DIR}/example")
-install(TARGETS MosaifyPy DESTINATION Mosaify/example)
+install(TARGETS MosaifyPy DESTINATION ${CMAKE_SOURCE_DIR}/example)
 
 FILE(WRITE ${CMAKE_BINARY_DIR}/Mosaify/example/main.py
         "# Python code example\n"
