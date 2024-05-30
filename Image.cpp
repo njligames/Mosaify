@@ -167,7 +167,7 @@ namespace NJLIC {
 
 //#define IMAGE_COPY_ROW_BY_ROW
 
-    bool Image::setPixels(const glm::vec2 &position, const Image &fromImage,
+    bool Image::setPixels(const glm::vec2 &position, const Image *fromImage,
                           const glm::vec2 &sourcePositionOffset) {
 #if defined(IMAGE_COPY_ROW_BY_ROW)
 
@@ -182,12 +182,12 @@ namespace NJLIC {
         bool error = false;
         glm::vec2 fromPos, toPos;
         glm::vec4 pixel;
-        for (int x = 0; x < fromImage.getWidth(); ++x) {
-            for (int y = 0; y < fromImage.getHeight(); ++y) {
+        for (int x = 0; x < fromImage->getWidth(); ++x) {
+            for (int y = 0; y < fromImage->getHeight(); ++y) {
                 fromPos = glm::vec2(x, y) + sourcePositionOffset;
                 toPos = glm::vec2(x, y) + position;
 
-                if (fromImage.getPixel(fromPos, pixel)) {
+                if (fromImage->getPixel(fromPos, pixel)) {
                     if (!setPixel(toPos, pixel)) {
                         //                        SDL_LogError(SDL_LOG_CATEGORY_TEST,
                         //                                     "error writing

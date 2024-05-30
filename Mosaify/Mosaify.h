@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-//#include <mutex>
 #include <unordered_map>
 #include <map>
 
@@ -24,12 +23,18 @@ namespace NJLIC {
 }
 
 class Mosaify {
-    vector<NJLIC::Image*> mTileImages;
-    uint8 mTileSize;
-
+public:
     typedef pair<int, int> Indices;
     typedef map<Indices, string> MosaicMap;
     typedef pair<Indices, string> MosaicMapPair;
+private:
+    vector<NJLIC::Image*> mTileImages;
+    uint8 mTileSize;
+
+    MosaicMap mMosaicMap;
+
+    int getMaxThreads()const;
+    NJLIC::Image *resizeImage(const NJLIC::Image *img)const;
 public:
     Mosaify();
     ~Mosaify();

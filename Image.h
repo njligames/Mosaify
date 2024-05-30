@@ -101,7 +101,7 @@ namespace NJLIC {
         //                       const glm::vec2 &sourceImageOffset =
         //                       glm::vec2(0, 0));
 
-        bool setPixels(const glm::vec2 &toPosition, const Image &fromImage,
+        bool setPixels(const glm::vec2 &toPosition, const Image *fromImage,
                        const glm::vec2 &fromOffsetPosition = glm::vec2(0, 0));
 
         /**
