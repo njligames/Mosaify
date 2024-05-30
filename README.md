@@ -18,7 +18,7 @@ These instructions will get you a copy of the project up and running on your loc
 * [GLM - 0.9.3.2](https://github.com/icaven/glm/tree/0.9.3.2)
 * [nlohman::json - v3.11.3](https://github.com/nlohmann/json/tree/v3.11.3)
 
-1. Clone Thirdpary library
+1. Clone Thirdpary library, this project assumes they are located in the same directory as the project.
 1. In Terminal, `cd` to the root of this project.
 1. Symbolically link the thirdparty lib in the root of the project. (`ln -s ./third/party/lib/dir thirdpartylink`)
     *  For GLM the `thirdpartylink` is `glm`
