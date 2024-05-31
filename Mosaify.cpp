@@ -60,6 +60,19 @@ static std::string extractFilename(const std::string& filepath) {
     }
 }
 
+static std::string extractPath(const std::string &filepath) {
+    size_t pos = filepath.find_last_of("/\\");
+
+    if (pos != std::string::npos) {
+        // return substring after last '/' or '\' character
+        return filepath.substr(0, pos);
+    } else {
+        // no '/' or '\' character found, return the whole string
+        return filepath;
+    }
+
+}
+
 // Define a function to calculate the similarity between two images
 static double calculateSimilarity(const Image *target, int image1OffsetX, int image1OffsetY, int image1SizeX, int image1SizeY,
                                   const Image *image) {
@@ -89,7 +102,7 @@ static double calculateSimilarity(const Image *target, int image1OffsetX, int im
 }
 
 // Define a function to generate a mosaic image
-static const Image &generateMosaic(const Image *targetImage, vector<Image*> &images, int tileSize, int numThreads, Mosaify::MosaicMap &mmap) {
+static const Image &generateMosaic(const Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int numThreads, Mosaify::MosaicMap &mmap) {
     int targetWidth = targetImage->getWidth();
     int targetHeight = targetImage->getHeight();
     int tileCols = targetWidth / tileSize;
@@ -110,7 +123,7 @@ static const Image &generateMosaic(const Image *targetImage, vector<Image*> &ima
                 int tileX = tileCol * tileSize;
                 int tileY = tileRow * tileSize;
 
-                double similarity = calculateSimilarity(targetImage, tileX, tileY, tileSize, tileSize, images[i]);
+                double similarity = calculateSimilarity(targetImage, tileX, tileY, tileSize, tileSize, images[i].second);
                 similarityScores[i][j] = similarity;
             }
         }
@@ -147,8 +160,8 @@ static const Image &generateMosaic(const Image *targetImage, vector<Image*> &ima
             }
 
             imageMapMutex.lock();
-            mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex]);
-            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX, tileY), images[bestMatchIndex]->getFilename()));
+            mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex].second);
+            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX / tileSize, tileY / tileSize), images[bestMatchIndex].first));
             imageMapMutex.unlock();
         }
     };
@@ -182,14 +195,16 @@ const Image *Mosaify::resizeImage(const Image *img)const {
 
 Mosaify::Mosaify() :
 mTileSize(8),
-mMosaicImage(new Image())
+mMosaicImage(new Image()),
+mTargetImage(new Image())
 {
 }
 
 Mosaify::~Mosaify() {
+    delete mTargetImage;
     delete mMosaicImage;
     while (!mTileImages.empty()) {
-        Image *img = mTileImages.back();
+        Image *img = mTileImages.back().second;
         delete img;
         mTileImages.pop_back();
     }
@@ -199,43 +214,75 @@ void Mosaify::setTileSize(int tileSize) {
     mTileSize = tileSize;
 }
 
-uint32 Mosaify::addTileImage(int width,
+int Mosaify::getTileSize()const {
+    return mTileSize;
+}
+
+void Mosaify::addTileImage(int width,
                            int height,
                            int components,
-                           uint8 *data, const char *filepath) {
-    uint32 idx = mTileImages.size();
-
+                           uint8 *data,
+                           const char *filepath,
+                           TileId id) {
     Image *img = new Image();
     img->copyData(data, width, height, components, filepath);
-    mTileImages.push_back(img);
-
-    return idx;
+    mTileImages.push_back(TileImage(id, img));
 }
 
-uint32 Mosaify::addTileImage(const simple_image* si, const char *filepath) {
-    return this->addTileImage(si->rows, si->cols, si->comp, si->imgdata, filepath);
-}
-
-simple_image *Mosaify::getTileImage(uint32 idx)const {
-    simple_image *si = new simple_image();
-    if(idx < mTileImages.size()) {
-        Image *img = mTileImages.at(idx);
-
-        uint32 size = ((img->getWidth()) * (img->getHeight()) * (img->getNumberOfComponents()));
-        si->imgdata = new unsigned char[size];
-        memcpy(si->imgdata, img->getDataPtr(), size);
-
-        si->comp = img->getNumberOfComponents();
-        si->rows = img->getHeight();
-        si->cols = img->getWidth();
+bool Mosaify::removeTileImage(TileId id) {
+    bool ret = false;
+    for(auto iter = mTileImages.begin(); iter != mTileImages.end();) {
+        if((*iter).first == id) {
+            iter = mTileImages.erase(iter);
+            ret = true;
+        } else {
+            iter++;
+        }
     }
-    return si;
+    return ret;
+}
+
+bool Mosaify::hasTileImage(TileId id)const {
+    for(auto iter = mTileImages.begin(); iter != mTileImages.end();) {
+        if((*iter).first == id) {
+            return true;
+        } else {
+            iter++;
+        }
+    }
+    return false;
+}
+
+bool Mosaify::updateTileImage(int width,
+                              int height,
+                              int components,
+                              uint8 *data,
+                              const char *filepath,
+                              TileId id) {
+    bool ret = false;
+    for(auto iter = mTileImages.begin(); iter != mTileImages.end();) {
+        if((*iter).first == id) {
+            auto oldImg = (*iter).second;
+
+            Image *img = new Image();
+            img->copyData(data, width, height, components, filepath);
+            (*iter).second = img;
+
+            delete oldImg;
+
+            ret = true;
+        } else {
+            iter++;
+        }
+    }
+    return ret;
+
 }
 
 bool Mosaify::generate(int width,
               int height,
               int components,
-              unsigned char *data) {
+              uint8 *data) {
     int numThreads = getMaxThreads();
 
     Image *targetImage = new Image();
@@ -243,20 +290,17 @@ bool Mosaify::generate(int width,
 
     // Have to resized the tiles so that it can be tiled correctly.
     for(auto iter = mTileImages.begin(); iter != mTileImages.end(); iter++) {
-        NJLIC::Image *img = *iter;
+        NJLIC::Image *img = (*iter).second;
         img->resize(mTileSize, mTileSize);
     }
     mMosaicMap.clear();
 
     *mMosaicImage = generateMosaic(targetImage, mTileImages, mTileSize, numThreads, mMosaicMap);
+    *mTargetImage = *targetImage;
 
     delete targetImage;
 
     return true;
-}
-
-bool Mosaify::generate(const simple_image *si) {
-   return this->generate(si->rows, si->cols, si->comp, si->imgdata);
 }
 
 const NJLIC::Image *Mosaify::getMosaicImage()const {
@@ -270,13 +314,13 @@ const char *Mosaify::getMosaicMap()const {
     // iterate through the MosaicMap and add each pair to the JSON object
     for (const auto& pair : mMosaicMap) {
         Indices indices = pair.first;
-        string filename = pair.second;
+        TileId tid = pair.second;
 
         // create a JSON object for the pair and add it to the JSON array
         j.push_back({
                             {"x", indices.first},
                             {"y", indices.second},
-                            {"filename", filename}
+                            {"id", tid}
                     });
     }
 

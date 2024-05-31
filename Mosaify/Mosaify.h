@@ -8,15 +8,7 @@
 
 using namespace std;
 
-typedef unsigned int uint32;
 typedef unsigned char uint8;
-
-typedef struct simple_image_t {
-    uint32 rows;
-    uint32 cols;
-    uint32 comp;
-    uint8 *imgdata;
-} simple_image;
 
 namespace NJLIC {
     class Image;
@@ -30,15 +22,20 @@ public:
 
 class Mosaify {
 public:
-    typedef pair<int, int> Indices;
-    typedef map<Indices, string> MosaicMap;
-    typedef pair<Indices, string> MosaicMapPair;
+    typedef long long int TileId;
+
+    typedef pair<unsigned int, unsigned int> Indices;
+    typedef map<Indices, TileId> MosaicMap;
+    typedef pair<Indices, TileId> MosaicMapPair;
+
+    typedef pair<TileId, NJLIC::Image*> TileImage;
 private:
-    vector<NJLIC::Image*> mTileImages;
+    vector<TileImage> mTileImages;
     uint8 mTileSize;
 
     MosaicMap mMosaicMap;
     NJLIC::Image *mMosaicImage;
+    NJLIC::Image *mTargetImage;
 
     int getMaxThreads()const;
     const NJLIC::Image *resizeImage(const NJLIC::Image *img)const;
@@ -47,22 +44,29 @@ public:
     ~Mosaify();
 
     void setTileSize(int tileSize);
+    int getTileSize()const;
 
-    uint32 addTileImage(int width,
-                      int height,
-                      int components,
-                      uint8 *data,
-                      const char *filepath);
-    uint32 addTileImage(const simple_image* si,
-                        const char *filepath);
+    void addTileImage(int width,
+                        int height,
+                        int components,
+                        uint8 *data,
+                        const char *filepath,
+                        TileId id);
+    bool removeTileImage(TileId id);
 
-    simple_image *getTileImage(uint32 idx)const;
+    bool hasTileImage(TileId id)const;
+
+    bool updateTileImage(int width,
+                         int height,
+                         int components,
+                         uint8 *data,
+                         const char *filepath,
+                         TileId id);
 
     bool generate(int width,
                   int height,
                   int components,
-                  unsigned char *data);
-    bool generate(const simple_image *si);
+                  uint8 *data);
 
     const NJLIC::Image *getMosaicImage()const;
     const char *getMosaicMap()const;

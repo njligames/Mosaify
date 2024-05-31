@@ -58,20 +58,6 @@ class _SwigNonDynamicMeta(type):
     __setattr__ = _swig_setattr_nondynamic_class_variable(type.__setattr__)
 
 
-class simple_image(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    rows = property(_MosaifyPy.simple_image_rows_get, _MosaifyPy.simple_image_rows_set)
-    cols = property(_MosaifyPy.simple_image_cols_get, _MosaifyPy.simple_image_cols_set)
-    comp = property(_MosaifyPy.simple_image_comp_get, _MosaifyPy.simple_image_comp_set)
-    imgdata = property(_MosaifyPy.simple_image_imgdata_get, _MosaifyPy.simple_image_imgdata_set)
-
-    def __init__(self):
-        _MosaifyPy.simple_image_swiginit(self, _MosaifyPy.new_simple_image())
-    __swig_destroy__ = _MosaifyPy.delete_simple_image
-
-# Register simple_image in _MosaifyPy:
-_MosaifyPy.simple_image_swigregister(simple_image)
 class ImageFileLoader(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -101,14 +87,23 @@ class Mosaify(object):
     def setTileSize(self, tileSize):
         return _MosaifyPy.Mosaify_setTileSize(self, tileSize)
 
-    def addTileImage(self, *args):
-        return _MosaifyPy.Mosaify_addTileImage(self, *args)
+    def getTileSize(self):
+        return _MosaifyPy.Mosaify_getTileSize(self)
 
-    def getTileImage(self, idx):
-        return _MosaifyPy.Mosaify_getTileImage(self, idx)
+    def addTileImage(self, width, height, components, data, filepath, id):
+        return _MosaifyPy.Mosaify_addTileImage(self, width, height, components, data, filepath, id)
 
-    def generate(self, *args):
-        return _MosaifyPy.Mosaify_generate(self, *args)
+    def removeTileImage(self, id):
+        return _MosaifyPy.Mosaify_removeTileImage(self, id)
+
+    def hasTileImage(self, id):
+        return _MosaifyPy.Mosaify_hasTileImage(self, id)
+
+    def updateTileImage(self, width, height, components, data, filepath, id):
+        return _MosaifyPy.Mosaify_updateTileImage(self, width, height, components, data, filepath, id)
+
+    def generate(self, width, height, components, data):
+        return _MosaifyPy.Mosaify_generate(self, width, height, components, data)
 
     def getMosaicImage(self):
         return _MosaifyPy.Mosaify_getMosaicImage(self)

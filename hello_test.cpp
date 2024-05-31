@@ -2665,8 +2665,63 @@ void outOfMemHandler()
 
     std::abort();
 }
+
+//* 1. add tile and has tile
+TEST(HelloTest, AddTile) {
+    Mosaify *mosaic = new Mosaify();
+    Mosaify::TileId _id = 1;
+
+    string base("/Users/jamesfolk/Work/MosaicImageCreator/example/input/tile.input");
+    vector<string> paths = getImagePaths();
+    auto iter = paths.begin();
+    const NJLIC::Image *tile = ImageFileLoader::load(base + "/" + *iter);
+    mosaic->addTileImage(tile->getWidth(), tile->getHeight(), tile->getNumberOfComponents(), (uint8*)tile->getDataPtr(), (*iter).c_str(), _id);
+    delete tile;
+
+    ASSERT_TRUE(mosaic->hasTileImage(_id));
+    delete mosaic;
+}
+
+//* 2. add then remove tile doesn't have tile
+TEST(HelloTest, AddRemoveTile) {
+    Mosaify *mosaic = new Mosaify();
+    Mosaify::TileId _id = 1;
+
+    string base("/Users/jamesfolk/Work/MosaicImageCreator/example/input/tile.input");
+    vector<string> paths = getImagePaths();
+    auto iter = paths.begin();
+    const NJLIC::Image *tile = ImageFileLoader::load(base + "/" + *iter);
+    mosaic->addTileImage(tile->getWidth(), tile->getHeight(), tile->getNumberOfComponents(), (uint8*)tile->getDataPtr(), (*iter).c_str(), _id);
+    delete tile;
+
+    mosaic->removeTileImage(_id);
+
+    ASSERT_FALSE(mosaic->hasTileImage(_id));
+    delete mosaic;
+}
+
+//* 3. check random tile id so have tile returns false
+TEST(HelloTest, InvalidTileId) {
+    Mosaify *mosaic = new Mosaify();
+    Mosaify::TileId _id = 1;
+
+    ASSERT_FALSE(mosaic->hasTileImage(_id));
+    delete mosaic;
+}
+
+//* 4. set tile size and get tile size is the same.
+TEST(HelloTest, TileSize) {
+    Mosaify *mosaic = new Mosaify();
+    int tileSize = 8;
+
+    mosaic->setTileSize(tileSize);
+
+    ASSERT_EQ(tileSize, mosaic->getTileSize());
+    delete mosaic;
+}
+
 // Demonstrate some basic assertions.
-TEST(HelloTest, BasicAssertions) {
+TEST(HelloTest, Generate) {
 
     std::set_new_handler(outOfMemHandler);
 
@@ -2678,24 +2733,14 @@ TEST(HelloTest, BasicAssertions) {
     for(auto iter = paths.begin(); iter != paths.end(); iter++) {
         const NJLIC::Image *tile = ImageFileLoader::load(base + "/" + *iter);
         string path(base + "/" + *iter);
-        mosaic->addTileImage(tile->getWidth(), tile->getHeight(), tile->getNumberOfComponents(), (uint8*)tile->getDataPtr(), path.c_str());
+        mosaic->addTileImage(tile->getWidth(), tile->getHeight(), tile->getNumberOfComponents(), (uint8*)tile->getDataPtr(), path.c_str(), 1);
         delete tile;
     }
 
     const NJLIC::Image *target = ImageFileLoader::load("/Users/jamesfolk/Work/MosaicImageCreator/example/input/target.jpg");
-    if(mosaic->generate(target->getWidth(), target->getHeight(), target->getNumberOfComponents(), (uint8*)target->getDataPtr())) {
-        cout << "yes" << endl;
-    } else {
-        cout << "no" << endl;
-    }
+    ASSERT_TRUE(mosaic->generate(target->getWidth(), target->getHeight(), target->getNumberOfComponents(), (uint8*)target->getDataPtr()));
 
     ImageFileLoader::write("/Users/jamesfolk/Work/MosaicImageCreator/example/output/result.jpg", mosaic->getMosaicImage());
 
     delete mosaic;
-
-    // Expect two strings not to be equal.
-    EXPECT_STRNE("hello", "world");
-    // Expect equality.
-    EXPECT_EQ(7 * 6, 42);
-    //EXPECT_EQ(hello(), "Hello World!");
 }
