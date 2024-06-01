@@ -45,7 +45,7 @@ void ImageFileLoader::write(const string &filename, const Image *img) {
 }
 
 // Define a global mutex to protect the image map
-static mutex imageMapMutex;
+static mutex creationMutex;
 
 static std::string extractFilename(const std::string& filepath) {
     // find last '/' or '\' character in filepath
@@ -159,10 +159,10 @@ static const Image &generateMosaic(const Image *targetImage, vector<Mosaify::Til
                 }
             }
 
-            imageMapMutex.lock();
+            creationMutex.lock();
             mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex].second);
             mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX / tileSize, tileY / tileSize), images[bestMatchIndex].first));
-            imageMapMutex.unlock();
+            creationMutex.unlock();
         }
     };
 
