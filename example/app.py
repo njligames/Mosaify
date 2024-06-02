@@ -1,7 +1,9 @@
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for, render_template, send_file
 import sqlite3
 import os
+import io
 from PIL import Image
+import mimetypes
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -63,7 +65,10 @@ def uploaded_file(filename):
         c.execute('SELECT data FROM images WHERE filename=?', (filename,))
         row = c.fetchone()
         if row:
-            return row[0]
+            file_data = row[0]
+            mime_type = mimetypes.guess_type(filename)[0]
+            if mime_type:
+                return send_file(io.BytesIO(file_data), mimetype=mime_type)
     return 'File not found', 404
 
 @app.route('/list')
