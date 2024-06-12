@@ -1,5 +1,6 @@
 import MosaifyPy
 from PIL import Image
+import os
 
 class Mosaify:
 	def __init__(self):
@@ -12,7 +13,7 @@ class Mosaify:
 	    im = Image.open(path)
 	    im = im.convert('RGBA')
 
-	    rows,cols = im.size
+	    cols,rows = im.size
 	    s = im.tobytes() # Must keep a reference
 	    imgdata = s
 	    comp = 4
@@ -36,11 +37,20 @@ class Mosaify:
 	def getTileSize(self):
 		return self.mosaic.getTileSize()
 
+	def getTile(self, _id):
+		pass
+
 
 	def generate(self, path):
 		width, height, comp, imgdata = self.__pil_image(path)
 		return self.mosaic.generate(width, height, comp, imgdata)
 
-	def getMap(self):
+	def getMosaicMap(self):
 		mosaicMap = self.mosaic.getMosaicMap()
 		return mosaicMap
+
+	def getMosaicImage(self):
+		path = self.mosaic.getMosaicPreviewPath()
+		image = Image.open(path)
+		os.remove(path)
+		return image

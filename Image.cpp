@@ -274,7 +274,7 @@ namespace NJLIC {
     //        return retVal;
     //    }
 
-    int *Image::getDataPtr() const { return (int *)m_RawData; }
+    unsigned char *Image::getDataPtr() const { return m_RawData; }
 
     long Image::getDataSize() const { return m_RawDataSize; }
 

@@ -3,6 +3,10 @@
 #include "Color.h"
 
 #include <iostream>
+#include <filesystem>
+#include <iostream>
+namespace fs = std::__fs::filesystem;
+
 #include <thread>
 
 #ifndef STB_IMAGE_WRITE_IMPLEMENTATION
@@ -195,13 +199,11 @@ const Image *Mosaify::resizeImage(const Image *img)const {
 
 Mosaify::Mosaify() :
 mTileSize(8),
-mMosaicImage(new Image()),
-mTargetImage(new Image())
+mMosaicImage(new Image())
 {
 }
 
 Mosaify::~Mosaify() {
-    delete mTargetImage;
     delete mMosaicImage;
     while (!mTileImages.empty()) {
         Image *img = mTileImages.back().second;
@@ -221,7 +223,7 @@ int Mosaify::getTileSize()const {
 void Mosaify::addTileImage(int width,
                            int height,
                            int components,
-                           uint8 *data,
+                           unsigned char *data,
                            const char *filepath,
                            TileId id) {
     Image *img = new Image();
@@ -256,7 +258,7 @@ bool Mosaify::hasTileImage(TileId id)const {
 bool Mosaify::updateTileImage(int width,
                               int height,
                               int components,
-                              uint8 *data,
+                              unsigned char *data,
                               const char *filepath,
                               TileId id) {
     bool ret = false;
@@ -282,7 +284,7 @@ bool Mosaify::updateTileImage(int width,
 bool Mosaify::generate(int width,
               int height,
               int components,
-              uint8 *data) {
+              unsigned char *data) {
     int numThreads = getMaxThreads();
 
     Image *targetImage = new Image();
@@ -296,15 +298,14 @@ bool Mosaify::generate(int width,
     mMosaicMap.clear();
 
     *mMosaicImage = generateMosaic(targetImage, mTileImages, mTileSize, numThreads, mMosaicMap);
-    *mTargetImage = *targetImage;
+
+    mMosaicPreview = string(fs::temp_directory_path()) + string("/mosaic_preview.png");
+
+    ImageFileLoader::write(mMosaicPreview, mMosaicImage);
 
     delete targetImage;
 
     return true;
-}
-
-const NJLIC::Image *Mosaify::getMosaicImage()const {
-    return mMosaicImage;
 }
 
 const char *Mosaify::getMosaicMap()const {

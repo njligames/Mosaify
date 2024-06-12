@@ -84,6 +84,9 @@ class Mosaify(object):
         _MosaifyPy.Mosaify_swiginit(self, _MosaifyPy.new_Mosaify())
     __swig_destroy__ = _MosaifyPy.delete_Mosaify
 
+    def getMosaicPreviewPath(self):
+        return _MosaifyPy.Mosaify_getMosaicPreviewPath(self)
+
     def setTileSize(self, tileSize):
         return _MosaifyPy.Mosaify_setTileSize(self, tileSize)
 
@@ -104,9 +107,6 @@ class Mosaify(object):
 
     def generate(self, width, height, components, data):
         return _MosaifyPy.Mosaify_generate(self, width, height, components, data)
-
-    def getMosaicImage(self):
-        return _MosaifyPy.Mosaify_getMosaicImage(self)
 
     def getMosaicMap(self):
         return _MosaifyPy.Mosaify_getMosaicMap(self)

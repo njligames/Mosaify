@@ -31,11 +31,11 @@ public:
     typedef pair<TileId, NJLIC::Image*> TileImage;
 private:
     vector<TileImage> mTileImages;
-    uint8 mTileSize;
+    unsigned char mTileSize;
 
     MosaicMap mMosaicMap;
     NJLIC::Image *mMosaicImage;
-    NJLIC::Image *mTargetImage;
+    string mMosaicPreview;
 
     int getMaxThreads()const;
     const NJLIC::Image *resizeImage(const NJLIC::Image *img)const;
@@ -43,13 +43,15 @@ public:
     Mosaify();
     ~Mosaify();
 
+    const char * getMosaicPreviewPath()const { return mMosaicPreview.c_str();}
+
     void setTileSize(int tileSize);
     int getTileSize()const;
 
     void addTileImage(int width,
                         int height,
                         int components,
-                        uint8 *data,
+                        unsigned char *data,
                         const char *filepath,
                         TileId id);
     bool removeTileImage(TileId id);
@@ -59,16 +61,15 @@ public:
     bool updateTileImage(int width,
                          int height,
                          int components,
-                         uint8 *data,
+                         unsigned char *data,
                          const char *filepath,
                          TileId id);
 
     bool generate(int width,
                   int height,
                   int components,
-                  uint8 *data);
+                  unsigned char *data);
 
-    const NJLIC::Image *getMosaicImage()const;
     const char *getMosaicMap()const;
 };
 

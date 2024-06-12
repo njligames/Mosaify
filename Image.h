@@ -152,7 +152,7 @@ namespace NJLIC {
          */
         int getBytesPerPixel() const;
 
-        int *getDataPtr() const;
+        unsigned char *getDataPtr() const;
         long getDataSize() const;
 
         /**
