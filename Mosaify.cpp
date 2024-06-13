@@ -165,7 +165,7 @@ static const Image &generateMosaic(const Image *targetImage, vector<Mosaify::Til
 
             creationMutex.lock();
             mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex].second);
-            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX / tileSize, tileY / tileSize), images[bestMatchIndex].first));
+            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX / tileSize, tileY / tileSize), images[bestMatchIndex].second));
             creationMutex.unlock();
         }
     };
@@ -201,6 +201,7 @@ Mosaify::Mosaify() :
 mTileSize(8),
 mMosaicImage(new Image())
 {
+    mMosaicImage->generate(mTileSize, mTileSize, 3);
 }
 
 Mosaify::~Mosaify() {
@@ -223,7 +224,7 @@ int Mosaify::getTileSize()const {
 void Mosaify::addTileImage(int width,
                            int height,
                            int components,
-                           unsigned char *data,
+                           uint8 *data,
                            const char *filepath,
                            TileId id) {
     Image *img = new Image();
@@ -255,10 +256,22 @@ bool Mosaify::hasTileImage(TileId id)const {
     return false;
 }
 
+bool Mosaify::getTileImage(TileId id, NJLIC::Image &img)const {
+    for(auto iter = mTileImages.begin(); iter != mTileImages.end();) {
+        if((*iter).first == id) {
+            img = *((*iter).second);
+            return true;
+        } else {
+            iter++;
+        }
+    }
+    return false;
+}
+
 bool Mosaify::updateTileImage(int width,
                               int height,
                               int components,
-                              unsigned char *data,
+                              uint8 *data,
                               const char *filepath,
                               TileId id) {
     bool ret = false;
@@ -282,9 +295,9 @@ bool Mosaify::updateTileImage(int width,
 }
 
 bool Mosaify::generate(int width,
-              int height,
-              int components,
-              unsigned char *data) {
+                       int height,
+                       int components,
+                       uint8 *data) {
     int numThreads = getMaxThreads();
 
     Image *targetImage = new Image();
@@ -299,13 +312,14 @@ bool Mosaify::generate(int width,
 
     *mMosaicImage = generateMosaic(targetImage, mTileImages, mTileSize, numThreads, mMosaicMap);
 
-    mMosaicPreview = string(fs::temp_directory_path()) + string("/mosaic_preview.png");
-
-    ImageFileLoader::write(mMosaicPreview, mMosaicImage);
 
     delete targetImage;
 
     return true;
+}
+
+void Mosaify::getMosaicImage(NJLIC::Image &img)const {
+   img = *mMosaicImage;
 }
 
 const char *Mosaify::getMosaicMap()const {
@@ -315,13 +329,13 @@ const char *Mosaify::getMosaicMap()const {
     // iterate through the MosaicMap and add each pair to the JSON object
     for (const auto& pair : mMosaicMap) {
         Indices indices = pair.first;
-        TileId tid = pair.second;
+        NJLIC::Image *img = pair.second;
 
         // create a JSON object for the pair and add it to the JSON array
         j.push_back({
                             {"x", indices.first},
                             {"y", indices.second},
-                            {"id", tid}
+                            {"fileName", img->getFilename()}
                     });
     }
 
@@ -329,4 +343,72 @@ const char *Mosaify::getMosaicMap()const {
 
     ret = j.dump();
     return ret.c_str();
+}
+
+const char *Mosaify::getMosaicJsonArray()const {
+    int targetWidth = mMosaicImage->getWidth();
+    int targetHeight = mMosaicImage->getHeight();
+    int cols = targetWidth / getTileSize();
+    int rows = targetHeight / getTileSize();
+
+    std::vector<std::vector<std::string>> grid;
+    grid.resize(rows);
+    for(int i = 0; i < rows; i++) {
+        grid[i].resize(cols);
+    }
+
+    for (const auto& pair : mMosaicMap) {
+        Indices indices = pair.first;
+        NJLIC::Image *img = pair.second;
+
+        grid[indices.second][indices.first] = img->getFilename();
+    }
+
+        /*
+[
+    ["LoganHeadshot.jpg", "LoganHeadshot.jpg"],
+    ["LoganHeadshot.jpg", "LoganHeadshot.jpg"],
+    ["LoganHeadshot.jpg", "LoganHeadshot.jpg"]
+]
+
+         */
+
+//        j.push_back({
+//                            {"x", indices.first},
+//                            {"y", indices.second},
+//                            {"fileName", img->getFilename()}
+//                    });
+
+    int i = 0;
+    static string val = "[";
+    for(i = 0; i < grid.size()-1; i++) {
+
+        string fileName;
+        int j = 0;
+        string string_row = "[";
+        for(j = 0; j < grid[i].size()-1; j++) {
+            fileName = grid[i][j];
+            string_row += string("\"") + fileName + string("\", ");
+        }
+        string_row += string("\"") + fileName + string("\"");
+        string_row += "],\n";
+        val += string_row;
+    }
+
+    string fileName;
+    int j = 0;
+    string string_row = "[";
+    for(j = 0; j < grid[i].size()-1; j++) {
+        fileName = grid[i][j];
+        string_row += string("\"") + fileName + string("\", ");
+    }
+    string_row += string("\"") + fileName + string("\"");
+    string_row += "]\n";
+    val += string_row;
+
+
+
+    val += string("]");
+
+    return val.c_str();
 }

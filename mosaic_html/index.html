@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid of Images Loaded from 2D JSON Array</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevents scrollbars from appearing */
+        }
+        .grid-container {
+            display: grid;
+            transform-origin: center center;
+            transition: transform 0.3s ease;
+        }
+        .grid-item {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures images cover the squares without seams */
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-container" id="gridContainer">
+        <!-- Grid items will be inserted here by JavaScript -->
+    </div>
+
+    <script>
+        // Function to fetch JSON data
+        async function fetchImages() {
+            try {
+                const response = await fetch('images2.json'); // Fetch the JSON file
+                const data = await response.json(); // Parse JSON response
+                return data; // Return 2D array of image URLs
+            } catch (error) {
+                console.error('Error fetching images:', error);
+                return []; // Return empty array on error
+            }
+        }
+
+        async function populateGrid() {
+            const images = await fetchImages(); // Load images from JSON file
+            const rows = images.length; // Number of rows
+            const columns = images[0].length; // Number of columns
+            const vminPercentage = 80; // Desired percentage of vmin to use for grid size
+
+            const container = document.getElementById('gridContainer');
+            container.style.width = `calc(${vminPercentage}vmin * ${columns} / ${rows})`;
+            container.style.height = `${vminPercentage}vmin`;
+            container.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+            // Add grid items
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < columns; col++) {
+                    const gridItem = document.createElement('div');
+                    gridItem.className = 'grid-item';
+                    const img = document.createElement('img');
+                    img.src = images[row][col]; // Use image URL from 2D array
+                    img.alt = `Image ${row + 1}-${col + 1}`;
+                    gridItem.appendChild(img);
+                    container.appendChild(gridItem);
+                }
+            }
+
+            let scale = 1;
+            document.body.addEventListener('wheel', (event) => {
+                event.preventDefault();
+                if (event.deltaY < 0) {
+                    scale += 0.1;
+                } else {
+                    scale = Math.max(1, scale - 0.1); // Prevent zooming out too much
+                }
+                container.style.transform = `scale(${scale})`;
+            });
+        }
+
+        populateGrid(); // Call function to populate the grid on page load
+    </script>
+</body>
+</html>

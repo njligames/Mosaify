@@ -42,6 +42,16 @@ class TestCalculations(unittest.TestCase):
 
         self.assertEqual(tileSize, mosaify.getTileSize())
 
+    def test_tile(self):
+        mosaify = Mosaify.Mosaify()
+        mosaify.setTileSize(8)
+        _id = 1
+        for path in glob.glob("input/tile.input/*.jpg"):
+            mosaify.addTile(_id, path)
+            _id = _id + 1
+        image = mosaify.getTileImage(1)
+        image.show()
+
     def test_generate_image(self):
         mosaify = Mosaify.Mosaify()
         mosaify.setTileSize(8)
@@ -65,8 +75,21 @@ class TestCalculations(unittest.TestCase):
 
         self.assertTrue(mosaify.generate("input/target.jpg"))
 
-        mosaicMap = mosaify.getMosaicMap()
-        print(mosaicMap)
+        s = mosaify.getMosaicMap()
+        print(s)
+
+    def test_generate_json_array(self):
+        mosaify = Mosaify.Mosaify()
+        mosaify.setTileSize(8)
+        _id = 1
+        for path in glob.glob("input/tile.input/*.jpg"):
+            mosaify.addTile(_id, path)
+            _id = _id + 1
+
+        self.assertTrue(mosaify.generate("input/target.jpg"))
+
+        s = mosaify.getMosaicJsonArray()
+        print(s)
         
 
 

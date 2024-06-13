@@ -45,6 +45,7 @@ target_include_directories(MosaifyPy
 target_link_libraries(
         MosaifyPy
         Mosaify
+        glm::glm
         ${Python3_LIBRARIES}
 )
 
