@@ -21,9 +21,8 @@ namespace fs = std::__fs::filesystem;
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
-using Image = NJLIC::Image;
 
-const Image *ImageFileLoader::load(const string& filename) {
+const NJLIC::Image *ImageFileLoader::load(const string& filename) {
 
     int width, height, channels;
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &channels, 0);
@@ -31,7 +30,7 @@ const Image *ImageFileLoader::load(const string& filename) {
         throw runtime_error("Failed to load image: " + filename);
     }
 
-    Image *image = new Image ;
+    NJLIC::Image *image = new NJLIC::Image ;
     image->copyData(data, width, height, channels, filename);
 
     stbi_image_free(data);
@@ -39,7 +38,7 @@ const Image *ImageFileLoader::load(const string& filename) {
     return image;
 }
 
-void ImageFileLoader::write(const string &filename, const Image *img) {
+void ImageFileLoader::write(const string &filename, const NJLIC::Image *img) {
     stbi_write_png(filename.c_str(),
                    img->getWidth(),
                    img->getHeight(),
@@ -78,20 +77,20 @@ static std::string extractPath(const std::string &filepath) {
 }
 
 // Define a function to calculate the similarity between two images
-static double calculateSimilarity(const Image *target, int image1OffsetX, int image1OffsetY, int image1SizeX, int image1SizeY,
-                                  const Image *image) {
+static double calculateSimilarity(const NJLIC::Image *target, int image1OffsetX, int image1OffsetY, int image1SizeX, int image1SizeY,
+                                  const NJLIC::Image *image) {
     int sum = 0;
     for (int y = 0; y < image->getHeight(); y++) {
         for (int x = 0; x < image->getWidth(); x++) {
 
             glm::vec4 pixel1;
             image->getPixel(glm::vec2(x, y), pixel1);
-            Color color1;
+            NJLIC::Color color1;
             color1.setRGB(pixel1);
 
             glm::vec4 pixel2;
             target->getPixel(glm::vec2(x + image1OffsetX, y + image1OffsetY), pixel2);
-            Color color2;
+            NJLIC::Color color2;
             color2.setRGB(pixel2);
 
             int diff = color1.distance(color2);
@@ -106,13 +105,13 @@ static double calculateSimilarity(const Image *target, int image1OffsetX, int im
 }
 
 // Define a function to generate a mosaic image
-static const Image &generateMosaic(const Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int numThreads, Mosaify::MosaicMap &mmap) {
+static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int numThreads, Mosaify::MosaicMap &mmap) {
     int targetWidth = targetImage->getWidth();
     int targetHeight = targetImage->getHeight();
     int tileCols = targetWidth / tileSize;
     int tileRows = targetHeight / tileSize;
 
-    static Image mosaicPixels(*targetImage);
+    static NJLIC::Image mosaicPixels(*targetImage);
 
     // Create a vector to hold the similarity scores
     vector<vector<double>> similarityScores(images.size(), vector<double>(tileCols * tileRows));
@@ -191,15 +190,15 @@ int Mosaify::getMaxThreads()const {
     return maxThreads;
 }
 
-const Image *Mosaify::resizeImage(const Image *img)const {
-    Image *ret = new Image(*img);
+const NJLIC::Image *Mosaify::resizeImage(const NJLIC::Image *img)const {
+    NJLIC::Image *ret = new NJLIC::Image(*img);
     ret->resize(mTileSize, mTileSize);
     return ret;
 }
 
 Mosaify::Mosaify() :
 mTileSize(8),
-mMosaicImage(new Image())
+mMosaicImage(new NJLIC::Image())
 {
     mMosaicImage->generate(mTileSize, mTileSize, 3);
 }
@@ -207,7 +206,7 @@ mMosaicImage(new Image())
 Mosaify::~Mosaify() {
     delete mMosaicImage;
     while (!mTileImages.empty()) {
-        Image *img = mTileImages.back().second;
+        NJLIC::Image *img = mTileImages.back().second;
         delete img;
         mTileImages.pop_back();
     }
@@ -227,7 +226,7 @@ void Mosaify::addTileImage(int width,
                            uint8 *data,
                            const char *filepath,
                            TileId id) {
-    Image *img = new Image();
+    NJLIC::Image *img = new NJLIC::Image();
     img->copyData(data, width, height, components, filepath);
     mTileImages.push_back(TileImage(id, img));
 }
@@ -279,7 +278,7 @@ bool Mosaify::updateTileImage(int width,
         if((*iter).first == id) {
             auto oldImg = (*iter).second;
 
-            Image *img = new Image();
+            NJLIC::Image *img = new NJLIC::Image();
             img->copyData(data, width, height, components, filepath);
             (*iter).second = img;
 
@@ -300,7 +299,7 @@ bool Mosaify::generate(int width,
                        uint8 *data) {
     int numThreads = getMaxThreads();
 
-    Image *targetImage = new Image();
+    NJLIC::Image *targetImage = new NJLIC::Image();
     targetImage->copyData(data, width, height, components, "loaded");
 
     // Have to resized the tiles so that it can be tiled correctly.
@@ -364,21 +363,6 @@ const char *Mosaify::getMosaicJsonArray()const {
         grid[indices.second][indices.first] = img->getFilename();
     }
 
-        /*
-[
-    ["LoganHeadshot.jpg", "LoganHeadshot.jpg"],
-    ["LoganHeadshot.jpg", "LoganHeadshot.jpg"],
-    ["LoganHeadshot.jpg", "LoganHeadshot.jpg"]
-]
-
-         */
-
-//        j.push_back({
-//                            {"x", indices.first},
-//                            {"y", indices.second},
-//                            {"fileName", img->getFilename()}
-//                    });
-
     int i = 0;
     static string val = "[";
     for(i = 0; i < grid.size()-1; i++) {
@@ -405,9 +389,6 @@ const char *Mosaify::getMosaicJsonArray()const {
     string_row += string("\"") + fileName + string("\"");
     string_row += "]\n";
     val += string_row;
-
-
-
     val += string("]");
 
     return val.c_str();

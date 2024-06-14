@@ -120,6 +120,9 @@ class Mosaify(object):
 # Register Mosaify in _MosaifyPy:
 _MosaifyPy.Mosaify_swigregister(Mosaify)
 
+def getMosaicPath(mosaify):
+    return _MosaifyPy.getMosaicPath(mosaify)
+
 def getMosaicPreviewPath(mosaify):
     return _MosaifyPy.getMosaicPreviewPath(mosaify)
 

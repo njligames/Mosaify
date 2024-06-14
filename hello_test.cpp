@@ -2741,9 +2741,10 @@ TEST(HelloTest, Generate) {
     const NJLIC::Image *target = ImageFileLoader::load("/Users/jamesfolk/Work/MosaicImageCreator/example/input/target.jpg");
     ASSERT_TRUE(mosaic->generate(target->getWidth(), target->getHeight(), target->getNumberOfComponents(), (uint8*)target->getDataPtr()));
 
+
 //    ImageFileLoader::write("/Users/jamesfolk/Work/MosaicImageCreator/example/output/result.jpg", mosaic->getMosaicImage());
 
-    cout << mosaic->getMosaicMap() << endl;
+//    cout << mosaic->saveMosaicSVGPath() << endl;
 
     delete mosaic;
 }

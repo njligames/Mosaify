@@ -61,3 +61,9 @@ class Mosaify:
 
 	def getMosaicJsonArray(self):
 		return self.mosaic.getMosaicJsonArray()
+
+	def getMosaicPath(self):
+		path = MosaifyPy.getMosaicPath(self.mosaic)
+		return path
+
+

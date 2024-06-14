@@ -90,6 +90,19 @@ class TestCalculations(unittest.TestCase):
 
         s = mosaify.getMosaicJsonArray()
         print(s)
+
+    def test_generate_main_mosaic(self):
+        mosaify = Mosaify.Mosaify()
+        mosaify.setTileSize(8)
+        _id = 1
+        for path in glob.glob("input/tile.input/*.jpg"):
+            mosaify.addTile(_id, path)
+            _id = _id + 1
+
+        self.assertTrue(mosaify.generate("input/target.jpg"))
+
+        s = mosaify.getMosaicPath()
+        print(s)
         
 
 

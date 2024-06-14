@@ -11,18 +11,20 @@ set(CMAKE_MODULE_PATH "/System/Volumes/Data/usr/local/Cellar/cmake/3.27.7/share/
 # Mosaify target
 add_subdirectory(glm)
 add_subdirectory(json)
-# find_package(ImageMagick COMPONENTS Magick++)
+add_subdirectory(libboard)
+find_package(ImageMagick COMPONENTS Magick++)
 add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
 target_include_directories(Mosaify
         INTERFACE public
 #        PUBLIC details_public
-        PRIVATE ${GLM_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR})
+
+        PRIVATE ${GLM_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR} )
 target_link_libraries(
         Mosaify
         PRIVATE
         glm::glm
         nlohmann_json::nlohmann_json
-        # ImageMagick::Magick++
+        ImageMagick::Magick++
 )
 
 # MosaifyPy
@@ -41,11 +43,12 @@ swig_add_library(MosaifyPy
         SOURCES MosaifyPy.i
 )
 target_include_directories(MosaifyPy
-        PRIVATE ${Python3_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR})
+        PRIVATE ${Python3_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/libboard/include)
 target_link_libraries(
         MosaifyPy
         Mosaify
         glm::glm
+        board
         ${Python3_LIBRARIES}
 )
 
