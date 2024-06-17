@@ -25,13 +25,15 @@ public:
     typedef long long int TileId;
 
     typedef pair<unsigned int, unsigned int> Indices;
-    typedef map<Indices, NJLIC::Image*> MosaicMap;
-    typedef pair<Indices, NJLIC::Image*> MosaicMapPair;
+    typedef map<Indices, TileId> MosaicMap;
+    typedef pair<Indices, TileId> MosaicMapPair;
 
     typedef pair<TileId, NJLIC::Image*> TileImage;
 private:
     vector<TileImage> mTileImages;
     uint8 mTileSize;
+    int mMaxHeight;
+    int mMaxWidth;
 
     MosaicMap mMosaicMap;
     NJLIC::Image *mMosaicImage;
@@ -41,6 +43,10 @@ private:
 public:
     Mosaify();
     ~Mosaify();
+
+    int getMaxWidth()const{return mMaxWidth;}
+    int getMaxHeight()const{return mMaxHeight;}
+
 
 
     void setTileSize(int tileSize);
@@ -74,6 +80,8 @@ public:
 
     const char *getMosaicMap()const;
     const char *getMosaicJsonArray()const;
+
+    void getMosaicMap(MosaicMap &vec)const;
 };
 
 #endif //MOSAICIMAGECREATOR_LIBRARY_H
