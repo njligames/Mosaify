@@ -35,17 +35,17 @@ include(UseSWIG)
 # https://cmake.org/cmake/help/v3.28/module/FindPython3.html#module:FindPython3
 find_package (Python3 COMPONENTS Interpreter Development REQUIRED)
 set_source_files_properties(MosaifyPy.i PROPERTIES CPLUSPLUS ON)
-set_property(SOURCE MosaifyPy.i PROPERTY SWIG_MODULE_NAME MosaifyPy)
+set_property(SOURCE MosaifyPy.i PROPERTY SWIG_MODULE_NAME MosaifyPy_${CMAKE_SYSTEM_NAME})
 set (UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
-swig_add_library(MosaifyPy
+swig_add_library(MosaifyPy_${CMAKE_SYSTEM_NAME}
         TYPE MODULE
         LANGUAGE python
         SOURCES MosaifyPy.i
 )
-target_include_directories(MosaifyPy
+target_include_directories(MosaifyPy_${CMAKE_SYSTEM_NAME}
         PRIVATE ${Python3_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/libboard/include)
 target_link_libraries(
-        MosaifyPy
+        MosaifyPy_${CMAKE_SYSTEM_NAME}
         Mosaify
         glm::glm
         board
@@ -81,11 +81,11 @@ install(TARGETS Mosaify hello_test
         LIBRARY DESTINATION Mosaify/lib
         RUNTIME DESTINATION Mosaify/bin
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MosaifyPy.py
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MosaifyPy_${CMAKE_SYSTEM_NAME}.py
         DESTINATION ${CMAKE_SOURCE_DIR}/example)
 
 #set(CMAKE_INSTALL_PYTHON_LIBDIR "${CMAKE_SOURCE_DIR}/example")
-install(TARGETS MosaifyPy DESTINATION ${CMAKE_SOURCE_DIR}/example)
+install(TARGETS MosaifyPy_${CMAKE_SYSTEM_NAME} DESTINATION ${CMAKE_SOURCE_DIR}/example)
 
 FILE(WRITE ${CMAKE_BINARY_DIR}/Mosaify/example/main.py
         "# Python code example\n"
