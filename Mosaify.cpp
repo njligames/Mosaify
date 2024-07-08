@@ -3,9 +3,18 @@
 #include "Color.h"
 
 #include <iostream>
-#include <filesystem>
+
 #include <iostream>
+
+
+#ifdef __linux__
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#include <mutex>
+#else
+#include <filesystem>
 namespace fs = std::__fs::filesystem;
+#endif
 
 #include <thread>
 

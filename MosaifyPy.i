@@ -10,10 +10,16 @@
 #include "Image.h"
 #include "libboard/include/board/Globals.h"
 
-#include <filesystem>
 #include <iostream>
-namespace fs = std::__fs::filesystem;
 using namespace std;
+#ifdef __linux__
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#include <mutex>
+#else
+#include <filesystem>
+namespace fs = std::__fs::filesystem;
+#endif
 #include <Board.h>
 
 const char * getMosaicPath(const Mosaify &mosaify){

@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.27.7)
+cmake_minimum_required(VERSION 3.17.0)
 project(Mosaify)
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     SET(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH "My Comment" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,7 +16,7 @@ set(CMAKE_MODULE_PATH "/System/Volumes/Data/usr/local/Cellar/cmake/3.27.7/share/
 add_subdirectory(glm)
 add_subdirectory(json)
 add_subdirectory(libboard)
-find_package(ImageMagick COMPONENTS Magick++)
+find_package(ImageMagick REQUIRED COMPONENTS Magick++)
 add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
 target_include_directories(Mosaify
         INTERFACE public
@@ -24,13 +28,14 @@ target_link_libraries(
         PRIVATE
         glm::glm
         nlohmann_json::nlohmann_json
-        ImageMagick::Magick++
+        # ImageMagick::Magick++
+        ${ImageMagick_LIBRARIES}
 )
 
 # MosaifyPy
 include(FindSWIG)
 find_program(SWIG_PATH swig)
-find_package(SWIG 4.2.1 COMPONENTS python)
+find_package(SWIG REQUIRED COMPONENTS python)
 include(UseSWIG)
 # https://cmake.org/cmake/help/v3.28/module/FindPython3.html#module:FindPython3
 find_package (Python3 COMPONENTS Interpreter Development REQUIRED)
