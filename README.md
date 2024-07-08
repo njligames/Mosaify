@@ -20,6 +20,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Third party libraries
 * [GLM - 0.9.3.2](https://github.com/icaven/glm/tree/0.9.3.2)
 * [nlohman::json - v3.11.3](https://github.com/nlohmann/json/tree/v3.11.3)
+* [libboard](https://github.com/c-koi/libboard)
 
 1. Clone Thirdpary library, this project assumes they are located in the same directory as the project.
 1. In Terminal, `cd` to the root of this project.
