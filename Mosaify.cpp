@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <thread>
+#include <mutex>
 
 #ifndef STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
