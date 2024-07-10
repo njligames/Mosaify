@@ -3,17 +3,6 @@
 #include "Color.h"
 
 #include <iostream>
-
-#if __has_include(<filesystem>)
-#include <filesystem>
-namespace fs = std::__fs::filesystem;
-#elif __has_include(<experimental/filesystem>)
-#include <experimental/filesystem>
-  namespace fs = std::experimental::filesystem;
-#else
-error "Missing the <filesystem> header."
-#endif
-
 #include <thread>
 
 #ifndef STB_IMAGE_WRITE_IMPLEMENTATION
