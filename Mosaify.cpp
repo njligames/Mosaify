@@ -184,7 +184,7 @@ int Mosaify::getMaxThreads()const {
         cerr << "Unable to determine the number of hardware threads. Using default value of 1." << endl;
         maxThreads = 1;
     }
-    return maxThreads;
+    return 1;//maxThreads;
 }
 
 const NJLIC::Image *Mosaify::resizeImage(const NJLIC::Image *img)const {
