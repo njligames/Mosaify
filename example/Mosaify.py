@@ -86,7 +86,7 @@ class Mosaify:
 	def getMosaicPreviewPath(self):
 		return self.__getMosaicPreviewPath(self.mosaic)
 
-	def getMosaicImage(self):
+	def getMosaicPreviewImage(self):
 		path = self.getMosaicPreviewPath()
 		image = Image.open(path)
 		os.remove(path)

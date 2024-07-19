@@ -8,6 +8,8 @@
 
 #include "Image.h"
 
+#include <iostream>
+
 //#include "SDL.h"
 #include "stb_image.h"
 
@@ -229,10 +231,16 @@ namespace NJLIC {
         if (dataPtr != NULL) {
             m_RawDataSize = ((width) * (height) * (components));
 
-            if (m_RawData)
-                delete[] m_RawData;
-            m_RawData = new unsigned char[m_RawDataSize];
-            assert(m_RawData);
+            try
+            {
+                if (m_RawData)
+                    delete[] m_RawData;
+                m_RawData = new unsigned char[m_RawDataSize];
+            }
+            catch (std::bad_alloc & ba)
+            {
+                throw std::runtime_error(std::string("bad_alloc caught: ") + std::string(ba.what()));
+            }
 
             memcpy(m_RawData, dataPtr, m_RawDataSize);
 
@@ -244,35 +252,12 @@ namespace NJLIC {
 
             assert(components >= 0 && components <= 4);
             m_Componenents = components;
-
-            //            assert(imageType > JLI_IMAGE_TYPE_NONE &&
-            //                       imageType < JLI_IMAGE_TYPE_MAX);
-            //            assert(njli::World::getInstance()->getWorldResourceLoader()->dataPtrSize(filename.c_str())
-
-            //            njli::World::getInstance()->getWorldResourceLoader()->dataPtrSize(filename.c_str();
-            //            != 0);
             m_Filename = filename;
 
             return true;
         }
         return false;
     }
-
-    //    bool Image::copyData(const WorldResourceLoader::ImageFileData
-    //    *fileData) {
-    //        bool retVal = false;
-    //
-    //        if (fileData) {
-    //            retVal = copyData(fileData->getBufferPtr(),
-    //            fileData->getSize(),
-    //                              fileData->getWidth(), fileData->getHeight(),
-    //                              fileData->numberOfComponents(),
-    //                              fileData->getType(),
-    //                              fileData->getFilename());
-    //        }
-    //
-    //        return retVal;
-    //    }
 
     unsigned char *Image::getDataPtr() const { return m_RawData; }
 

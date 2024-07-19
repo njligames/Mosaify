@@ -19,6 +19,58 @@
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+#if defined(__linux__)
+#include <fstream>
+#include <sstream>
+
+size_t getMemoryUsage() {
+    std::ifstream proc("/proc/self/status");
+    std::string line;
+    while (std::getline(proc, line)) {
+        if (line.rfind("VmRSS:", 0) == 0) {
+            // Found the line that contains memory usage info
+            std::istringstream iss(line);
+            std::string key, value, unit;
+            iss >> key >> value >> unit;
+            return std::stol(value) * 1024; // Convert kB to bytes
+        }
+    }
+    return 0; // If VmRSS line is not found
+}
+
+#elif defined(__APPLE__)
+#include <mach/mach.h>
+
+size_t getMemoryUsage() {
+    struct task_basic_info info;
+    mach_msg_type_number_t infoCount = TASK_BASIC_INFO_COUNT;
+
+    if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &infoCount) != KERN_SUCCESS) {
+        return 0;
+    }
+
+    return info.resident_size;
+}
+
+#else
+#error "Unsupported platform"
+#endif
+
+std::string formatWithSIUnit(double bytes) {
+    const char* suffixes[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB"};
+    int suffixIndex = 0;
+    double value = bytes;
+
+    while (value >= 1024 && suffixIndex < 6) {
+        value /= 1024;
+        ++suffixIndex;
+    }
+
+    char formattedValue[50];
+    sprintf(formattedValue, "%.2f %s", value, suffixes[suffixIndex]);
+    return std::string(formattedValue);
+}
+
 const NJLIC::Image *ImageFileLoader::load(const string& filename) {
 
     int width, height, channels;
@@ -299,23 +351,51 @@ bool Mosaify::generate(int width,
                        int components,
                        uint8 *data) {
     int numThreads = getMaxThreads();
+    NJLIC::Image *targetImage = nullptr;
 
-    NJLIC::Image *targetImage = new NJLIC::Image();
-    targetImage->copyData(data, width, height, components, "loaded");
+    std::cout << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
+
+
+    try
+    {
+        targetImage = new NJLIC::Image();
+        targetImage->copyData(data, width, height, components, "loaded");
+    }
+    catch (std::bad_alloc & ba)
+    {
+        throw std::runtime_error(std::string("bad_alloc caught: ") + std::string(ba.what()));
+    }
+    catch (...)
+    {
+        throw std::runtime_error(std::string("exception caught"));
+    }
 
     vector<Mosaify::TileImage> images;
     // Have to resized the tiles so that it can be tiled correctly.
     for(auto iter = mTileImages.begin(); iter != mTileImages.end(); iter++) {
 
-        NJLIC::Image *img = new NJLIC::Image(*((*iter).second));
-        TileId id = (*iter).first;
+        try
+        {
+            NJLIC::Image *img = new NJLIC::Image(*((*iter).second));
+            TileId id = (*iter).first;
 
-        img->resize(mTileSize, mTileSize);
-        images.push_back(Mosaify::TileImage(id, img));
+            img->resize(mTileSize, mTileSize);
+            images.push_back(Mosaify::TileImage(id, img));
+        }
+        catch (std::bad_alloc & ba)
+        {
+            throw std::runtime_error(std::string("bad_alloc caught: ") + std::string(ba.what()));
+        }
+        catch (...)
+        {
+            throw std::runtime_error(std::string("exception caught"));
+        }
+//        std::cout << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
     }
     mMosaicMap.clear();
 
     *mMosaicImage = generateMosaic(targetImage, images, mTileSize, numThreads, mMosaicMap);
+    std::cout << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
 
     while(!images.empty()) {
         Mosaify::TileImage ti = images.back();
@@ -325,6 +405,7 @@ bool Mosaify::generate(int width,
 
 
     delete targetImage;
+    std::cout << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
 
     return true;
 }

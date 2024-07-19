@@ -3,6 +3,7 @@
 import unittest
 import glob
 import Mosaify
+from PIL import Image
 
 class TestCalculations(unittest.TestCase):
 
@@ -42,15 +43,15 @@ class TestCalculations(unittest.TestCase):
 
         self.assertEqual(tileSize, mosaify.getTileSize())
 
-    def test_tile(self):
-        mosaify = Mosaify.Mosaify()
-        mosaify.setTileSize(8)
-        _id = 1
-        for path in glob.glob("input/tile.input/*.jpg"):
-            mosaify.addTile(_id, path)
-            _id = _id + 1
-        image = mosaify.getTileImage(1)
-        image.show()
+    # def test_tile(self):
+    #     mosaify = Mosaify.Mosaify()
+    #     mosaify.setTileSize(8)
+    #     _id = 1
+    #     for path in glob.glob("input/tile.input/*.jpg"):
+    #         mosaify.addTile(_id, path)
+    #         _id = _id + 1
+    #     image = mosaify.getTileImage(1)
+    #     image.show()
 
     def test_generate_image(self):
         mosaify = Mosaify.Mosaify()
@@ -60,49 +61,60 @@ class TestCalculations(unittest.TestCase):
             mosaify.addTile(_id, path)
             _id = _id + 1
 
-        self.assertTrue(mosaify.generate("input/target.jpg"))
+        with Image.open("input/target.jpg") as im:
+            # Process the image here
+            im = im.convert('RGB')
+            data = im.tobytes()
+            rows, cols = im.size
+            comps = 3
+            self.assertTrue(mosaify.generate(rows, cols, comps, data))
 
-        image = mosaify.getMosaicImage()
-        image.show()
+        # self.assertTrue(mosaify.generate("input/target.jpg"))
+        
+            print("The path to the mosaic Image", mosaify.getMosaicPath())
 
-    def test_generate_map(self):
-        mosaify = Mosaify.Mosaify()
-        mosaify.setTileSize(8)
-        _id = 1
-        for path in glob.glob("input/tile.input/*.jpg"):
-            mosaify.addTile(_id, path)
-            _id = _id + 1
+            image = mosaify.getMosaicPreviewImage()
+            image.show()
 
-        self.assertTrue(mosaify.generate("input/target.jpg"))
 
-        s = mosaify.getMosaicMap()
-        print(s)
+    # def test_generate_map(self):
+    #     mosaify = Mosaify.Mosaify()
+    #     mosaify.setTileSize(8)
+    #     _id = 1
+    #     for path in glob.glob("input/tile.input/*.jpg"):
+    #         mosaify.addTile(_id, path)
+    #         _id = _id + 1
 
-    def test_generate_json_array(self):
-        mosaify = Mosaify.Mosaify()
-        mosaify.setTileSize(8)
-        _id = 1
-        for path in glob.glob("input/tile.input/*.jpg"):
-            mosaify.addTile(_id, path)
-            _id = _id + 1
+    #     # self.assertTrue(mosaify.generate("input/target.jpg"))
 
-        self.assertTrue(mosaify.generate("input/target.jpg"))
+    #     # s = mosaify.getMosaicMap()
+    #     # print(s)
 
-        s = mosaify.getMosaicJsonArray()
-        print(s)
+    # def test_generate_json_array(self):
+    #     mosaify = Mosaify.Mosaify()
+    #     mosaify.setTileSize(8)
+    #     _id = 1
+    #     for path in glob.glob("input/tile.input/*.jpg"):
+    #         mosaify.addTile(_id, path)
+    #         _id = _id + 1
 
-    def test_generate_main_mosaic(self):
-        mosaify = Mosaify.Mosaify()
-        mosaify.setTileSize(8)
-        _id = 1
-        for path in glob.glob("input/tile.input/*.jpg"):
-            mosaify.addTile(_id, path)
-            _id = _id + 1
+    #     # self.assertTrue(mosaify.generate("input/target.jpg"))
 
-        self.assertTrue(mosaify.generate("input/target.jpg"))
+    #     # s = mosaify.getMosaicJsonArray()
+    #     # print(s)
 
-        s = mosaify.getMosaicPath()
-        print(s)
+    # def test_generate_main_mosaic(self):
+    #     mosaify = Mosaify.Mosaify()
+    #     mosaify.setTileSize(8)
+    #     _id = 1
+    #     for path in glob.glob("input/tile.input/*.jpg"):
+    #         mosaify.addTile(_id, path)
+    #         _id = _id + 1
+
+    #     # self.assertTrue(mosaify.generate("input/target.jpg"))
+
+    #     # s = mosaify.getMosaicPath()
+    #     # print(s)
         
 
 

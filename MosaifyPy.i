@@ -13,16 +13,6 @@
 #include <iostream>
 using namespace std;
 
-//#if __has_include(<filesystem>)
-//#include <filesystem>
-//  namespace fs = std::__fs::filesystem;
-//#elif __has_include(<experimental/filesystem>)
-//#include <experimental/filesystem>
-//  namespace fs = std::experimental::filesystem;
-//#else
-//error "Missing the <filesystem> header."
-//#endif
-
 #include <Board.h>
 
 const char * getMosaicPath(const Mosaify &mosaify){
@@ -94,6 +84,19 @@ const char * getMosaicTilePreviewPath(const Mosaify &mosaify, Mosaify::TileId _i
     return path.c_str();
 }
 %}
+
+%include <std_string.i>
+%include <exception.i>
+
+%exception {
+    try {
+        $action
+    } catch(const std::exception& e) {
+        SWIG_exception(SWIG_RuntimeError, e.what());
+    } catch(...) {
+        SWIG_exception(SWIG_UnknownError, "");
+    }
+}
 
 %typemap(in) uint8* (char* buffer, Py_ssize_t length) {
     PyBytes_AsStringAndSize($input,&buffer,&length);
