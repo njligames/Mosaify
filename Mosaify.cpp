@@ -372,6 +372,9 @@ bool Mosaify::generate(int width,
 
     vector<Mosaify::TileImage> images;
     // Have to resized the tiles so that it can be tiled correctly.
+    int i = 0;
+    size_t totalSize = getMemoryUsage();
+    std::cout << "Memory usage: " << formatWithSIUnit(totalSize) << std::endl;
     for(auto iter = mTileImages.begin(); iter != mTileImages.end(); iter++) {
 
         try
@@ -390,7 +393,11 @@ bool Mosaify::generate(int width,
         {
             throw std::runtime_error(std::string("exception caught"));
         }
-//        std::cout << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
+        std::cout << "Image " << i << " of " << mTileImages.size() << std::endl;
+        size_t currentSize = getMemoryUsage();
+        std::cout << "\tMemory allocated: " << formatWithSIUnit(currentSize - totalSize) << std::endl;
+        totalSize = getMemoryUsage();
+        std::cout << "\tMemory usage: " << formatWithSIUnit(totalSize) << std::endl;
     }
     mMosaicMap.clear();
 
