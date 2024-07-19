@@ -80,6 +80,9 @@ class Mosaify(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
+    def getMaxThreads(self):
+        return _MosaifyPy_Darwin.Mosaify_getMaxThreads(self)
+
     def __init__(self):
         _MosaifyPy_Darwin.Mosaify_swiginit(self, _MosaifyPy_Darwin.new_Mosaify())
     __swig_destroy__ = _MosaifyPy_Darwin.delete_Mosaify

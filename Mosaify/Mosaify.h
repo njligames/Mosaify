@@ -38,9 +38,9 @@ private:
     MosaicMap mMosaicMap;
     NJLIC::Image *mMosaicImage;
 
-    int getMaxThreads()const;
     const NJLIC::Image *resizeImage(const NJLIC::Image *img)const;
 public:
+    int getMaxThreads()const;
     Mosaify();
     ~Mosaify();
 
