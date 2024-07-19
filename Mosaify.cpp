@@ -396,6 +396,9 @@ bool Mosaify::generate(int width,
         std::cout << "Image " << i++ << " of " << mTileImages.size() << std::endl;
 
         std::cout << "\tMemory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
+
+        // Wait a bit to ensure system updates the memory info
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     mMosaicMap.clear();
 
