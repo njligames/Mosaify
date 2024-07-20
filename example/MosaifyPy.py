@@ -13,6 +13,7 @@ if isDarwin():
 	from MosaifyPy_Darwin import Mosaify
 	from MosaifyPy_Darwin import Image
 	from MosaifyPy_Darwin import ImageFileLoader
+	from MosaifyPy_Darwin import getMosaicPreviewPath as _getMosaicPreviewPath
 
 if isLinux():
 	from MosaifyPy_Linux import Mosaify
@@ -70,7 +71,7 @@ class MosaifyPy:
 	    imgdata = s
 	    comp = 4
 
-	    return cols, rows, comp, imgdata
+	    return cols, rows, comp, imgdata, im
 
 	def __init__(self):
 		self.mosaic = Mosaify()
@@ -83,7 +84,7 @@ class MosaifyPy:
 		self.mosaic.addTileImage(width, height, comp, imgdata, path, _id)
 
 	def addTile(self, _id, path):
-		width, height, comp, imgdata = self.__pil_image(path)
+		width, height, comp, imgdata, im = self.__pil_image(path)
 
 		self.mosaic.addTileImage(width, height, comp, imgdata, path, _id)
 
@@ -100,7 +101,7 @@ class MosaifyPy:
 		return self.mosaic.getTileSize()
 
 	def getMosaicTilePreviewPath(self, _id):
-		return getMosaicPreviewPath()
+		return _getMosaicPreviewPath(self.mosaic)
 
 	def getTileImage(self, _id):
 		path = self.getMosaicTilePreviewPath(_id)
