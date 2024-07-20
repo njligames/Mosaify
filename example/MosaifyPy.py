@@ -3,13 +3,21 @@ import tempfile
 import uuid
 
 def isDarwin():
-    return "Darwin" == platform.uname().system
+	return "Darwin" == platform.uname().system
+
+def isLinux():
+	return "Linux" == platform.uname().system
 
 # from MosaifyPy import isDarwin
 if isDarwin():
 	from MosaifyPy_Darwin import Mosaify
 	from MosaifyPy_Darwin import Image
 	from MosaifyPy_Darwin import ImageFileLoader
+
+if isLinux():
+	from MosaifyPy_Linux import Mosaify
+	from MosaifyPy_Linux import Image
+	from MosaifyPy_Linux import ImageFileLoader
 
 # from PIL import Image
 from PIL import Image as PILImage
