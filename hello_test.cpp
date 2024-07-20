@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "Mosaify/Mosaify.h"
-#include "Image.h"
+#include "Mosaify/Image.h"
 #include <vector>
 using namespace std;
 

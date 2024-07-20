@@ -271,6 +271,9 @@ namespace NJLIC {
         void resize(int width, int height);
         Image resize(int width, int height)const;
 
+        Image &clip(int x, int y, int width, int height)const;
+//        Image &clip(const glm::vec2 &position, int width, int height)const;
+
         //    void setPVRData(int *pvrData, unsigned long dataSize, const char
         //    *fileName);
         //    int *getCompressedData()const;

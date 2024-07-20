@@ -7,7 +7,7 @@
 
 %{
 #include "Mosaify/Mosaify.h"
-#include "Image.h"
+#include "Mosaify/Image.h"
 #include "libboard/include/board/Globals.h"
 
 #include <iostream>
@@ -104,6 +104,7 @@ const char * getMosaicTilePreviewPath(const Mosaify &mosaify, Mosaify::TileId _i
 }
 
 %include "Mosaify/Mosaify.h"
+%include "Mosaify/Image.h"
 const char * getMosaicPath(const Mosaify &mosaify);
 const char * getMosaicPreviewPath(const Mosaify &mosaify);
 const char * getMosaicTilePreviewPath(const Mosaify &mosaify, Mosaify::TileId _id);

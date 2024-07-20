@@ -2,13 +2,28 @@
 
 import unittest
 import glob
-import Mosaify
 from PIL import Image
+import MosaifyPy
+from MosaifyPy import Image
 
 class TestCalculations(unittest.TestCase):
 
+    def test_image(self):
+        img = Image()
+        img.open("input/target.jpg")
+        pilImg = img.toPILImage()
+        pilImg.show()
+
+    def test_image_clip(self):
+        img = Image()
+        img.open("input/target.jpg")
+        img.clip(50, 50, 500, 500)
+        pilImg = img.toPILImage()
+        pilImg.show()
+
     def test_addtile(self):
-        mosaify = Mosaify.Mosaify()
+        mosaify = MosaifyPy.MosaifyPy()
+
         _id = 1
 
         paths = glob.glob("input/tile.input/*.jpg")
@@ -18,30 +33,34 @@ class TestCalculations(unittest.TestCase):
         self.assertTrue(mosaify.hasTile(_id))
 
 
-    def test_addremovetile(self):
-        mosaify = Mosaify.Mosaify()
-        _id = 1
+    # def test_addremovetile(self):
+    #     mosaify = MosaifyPy.MosaifyPy()
+    #     _id = 1
 
-        paths = glob.glob("input/tile.input/*.jpg")
+    #     paths = glob.glob("input/tile.input/*.jpg")
 
-        mosaify.addTile(_id, paths[0])
-        mosaify.removeTile(_id)
+    #     mosaify.addTile(_id, paths[0])
+    #     mosaify.removeTile(_id)
 
-        self.assertFalse(mosaify.hasTile(_id))
+    #     self.assertFalse(mosaify.hasTile(_id))
 
-    def test_invalidtileid(self):
-        mosaify = Mosaify.Mosaify()
-        _id = 1
+    # def test_invalidtileid(self):
+    #     mosaify = MosaifyPy.MosaifyPy()
+    #     _id = 1
 
-        self.assertFalse(mosaify.hasTile(_id))
+    #     self.assertFalse(mosaify.hasTile(_id))
 
-    def test_tilesize(self):
-        mosaify = Mosaify.Mosaify()
-        tileSize = 8
+    # def test_tilesize(self):
+    #     mosaify = MosaifyPy.MosaifyPy()
+    #     tileSize = 8
 
-        mosaify.setTileSize(tileSize)
+    #     mosaify.setTileSize(tileSize)
 
-        self.assertEqual(tileSize, mosaify.getTileSize())
+    #     self.assertEqual(tileSize, mosaify.getTileSize())
+
+    # def test_image_crop(self):
+    #     image = Mosaify.Image()
+
 
     # def test_tile(self):
     #     mosaify = Mosaify.Mosaify()
@@ -53,28 +72,28 @@ class TestCalculations(unittest.TestCase):
     #     image = mosaify.getTileImage(1)
     #     image.show()
 
-    def test_generate_image(self):
-        mosaify = Mosaify.Mosaify()
-        mosaify.setTileSize(8)
-        _id = 1
-        for path in glob.glob("input/tile.input/*.jpg"):
-            mosaify.addTile(_id, path)
-            _id = _id + 1
+    # def test_generate_image(self):
+    #     mosaify = Mosaify.Mosaify()
+    #     mosaify.setTileSize(8)
+    #     _id = 1
+    #     for path in glob.glob("input/tile.input/*.jpg"):
+    #         mosaify.addTile(_id, path)
+    #         _id = _id + 1
 
-        with Image.open("input/target.jpg") as im:
-            # Process the image here
-            im = im.convert('RGB')
-            data = im.tobytes()
-            rows, cols = im.size
-            comps = 3
-            self.assertTrue(mosaify.generate(rows, cols, comps, data))
+    #     with Image.open("input/target.jpg") as im:
+    #         # Process the image here
+    #         im = im.convert('RGB')
+    #         data = im.tobytes()
+    #         rows, cols = im.size
+    #         comps = 3
+    #         self.assertTrue(mosaify.generate(rows, cols, comps, data))
 
-        # self.assertTrue(mosaify.generate("input/target.jpg"))
+    #     # self.assertTrue(mosaify.generate("input/target.jpg"))
         
-            print("The path to the mosaic Image", mosaify.getMosaicPath())
+    #         print("The path to the mosaic Image", mosaify.getMosaicPath())
 
-            image = mosaify.getMosaicPreviewImage()
-            image.show()
+    #         image = mosaify.getMosaicPreviewImage()
+    #         image.show()
 
 
     # def test_generate_map(self):

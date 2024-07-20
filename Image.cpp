@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 James Folk. All rights reserved.
 //
 
-#include "Image.h"
+#include "Mosaify/Image.h"
 
 #include <iostream>
 
@@ -814,6 +814,59 @@ namespace NJLIC {
         img.copyData(resized_data, new_width, new_height, getNumberOfComponents(), getFilename());
         return img;
     }
+
+    Image &Image::clip(int x, int y, int width, int height)const {
+        static Image img;
+
+        img.generate(width, height, getNumberOfComponents(),  glm::vec4(1.0f, 1.0f, 1.0f,
+                                                                        1.0f));
+        auto red = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+        img.setPixel(glm::vec2(0, 0), red);
+        img.setPixel(glm::vec2(0, height-1), red);
+        img.setPixel(glm::vec2(width-1, 0), red);
+        img.setPixel(glm::vec2(width-1, height-1), red);
+
+        // Check if the coordinates and dimensions are within the bounds of the image
+        if (!(x < 0 || y < 0 || x + width > getWidth() || y + height > getHeight()) ){
+            for(int xTo = 0, xOffset = x; xTo < width; xTo++, xOffset++) {
+                for(int yTo = 0, yOffset = y; yTo < height; yTo++, yOffset++) {
+                    auto pixel = getPixel(glm::vec2(xOffset, yOffset));
+                    img.setPixel(glm::vec2(xTo, yTo), pixel);
+                }
+            }
+//            // Copy the region of interest (ROI) into the output image
+//            for (int j = 0; j < width; ++j, ++x) {
+//                for (int i = 0; i < height; ++i, ++y) {
+//                    auto pixel = getPixel(glm::vec2(x, y));
+//                    img.setPixel(glm::vec2(i, j), pixel);
+//                }
+//            }
+        }
+
+        return img;
+    }
+
+//    Image &Image::clip(const glm::vec2 &position, int width, int height)const {
+//        static Image img;
+//
+//        img.generate(width, height, getNumberOfComponents());
+//        auto x = position.x;
+//        auto y = position.y;
+//
+//        // Check if the coordinates and dimensions are within the bounds of the image
+//        if (!(x < 0 || y < 0 || x + width > getWidth() || y + height > getHeight()) ){
+//            // Copy the region of interest (ROI) into the output image
+//            for (int j = 0; j < width; ++j, ++x) {
+//                for (int i = 0; i < height; ++i, ++y) {
+//                    auto pixel = getPixel(glm::vec2(x, y));
+//                    img.setPixel(glm::vec2(i, j), pixel);
+//                }
+//            }
+//        }
+//
+//        return img;
+//    }
 
     std::vector<glm::vec4> Image::operator[](int row) {
         std::vector<glm::vec4> ret;

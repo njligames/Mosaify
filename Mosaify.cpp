@@ -1,5 +1,5 @@
 #include "Mosaify/Mosaify.h"
-#include "Image.h"
+#include "Mosaify/Image.h"
 #include "Color.h"
 
 #include <iostream>
