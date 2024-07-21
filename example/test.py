@@ -2,7 +2,7 @@
 
 import unittest
 import glob
-from PIL import Image
+from PIL import Image as PILImage
 from MosaifyPy import Image
 from MosaifyPy import MosaifyPy
 
@@ -58,7 +58,6 @@ class TestCalculations(unittest.TestCase):
 
         self.assertEqual(tileSize, mosaify.getTileSize())
 
-    # TODO: Test is broken
     def test_tile(self):
         mosaify = MosaifyPy()
         mosaify.setTileSize(8)
@@ -70,69 +69,40 @@ class TestCalculations(unittest.TestCase):
         image = mosaify.getTileImage(1)
         image.show()
 
-    # def test_generate_image(self):
-    #     mosaify = Mosaify.Mosaify()
-    #     mosaify.setTileSize(8)
-    #     _id = 1
-    #     for path in glob.glob("input/tile.input/*.jpg"):
-    #         mosaify.addTile(_id, path)
-    #         _id = _id + 1
+    def test_generate_image(self):
+        mosaify = MosaifyPy()
+        mosaify.setTileSize(8)
+        _id = 1
+        for path in glob.glob("input/tile.input/*.jpg"):
+            mosaify.addTile(_id, path)
+            _id = _id + 1
 
-    #     with Image.open("input/target.jpg") as im:
-    #         # Process the image here
-    #         im = im.convert('RGB')
-    #         data = im.tobytes()
-    #         rows, cols = im.size
-    #         comps = 3
-    #         self.assertTrue(mosaify.generate(rows, cols, comps, data))
+        with PILImage.open("input/target.jpg") as im:
+            # Process the image here
+            im = im.convert('RGB')
+            data = im.tobytes()
+            rows, cols = im.size
+            comps = 3
 
-    #     # self.assertTrue(mosaify.generate("input/target.jpg"))
-        
-    #         print("The path to the mosaic Image", mosaify.getMosaicPath())
+            try:
+                success = mosaify.generate(rows, cols, comps, data)
+                self.assertTrue(success)
 
-    #         image = mosaify.getMosaicPreviewImage()
-    #         image.show()
+                # s = mosaify.getMosaicJsonArray()
+                # print(s)
 
+                # s = mosaify.getMosaicMap()
+                # print(s)
 
-    # def test_generate_map(self):
-    #     mosaify = Mosaify.Mosaify()
-    #     mosaify.setTileSize(8)
-    #     _id = 1
-    #     for path in glob.glob("input/tile.input/*.jpg"):
-    #         mosaify.addTile(_id, path)
-    #         _id = _id + 1
+                # s = mosaify.getMosaicPath()
+                # print(s)
 
-    #     # self.assertTrue(mosaify.generate("input/target.jpg"))
-
-    #     # s = mosaify.getMosaicMap()
-    #     # print(s)
-
-    # def test_generate_json_array(self):
-    #     mosaify = Mosaify.Mosaify()
-    #     mosaify.setTileSize(8)
-    #     _id = 1
-    #     for path in glob.glob("input/tile.input/*.jpg"):
-    #         mosaify.addTile(_id, path)
-    #         _id = _id + 1
-
-    #     # self.assertTrue(mosaify.generate("input/target.jpg"))
-
-    #     # s = mosaify.getMosaicJsonArray()
-    #     # print(s)
-
-    # def test_generate_main_mosaic(self):
-    #     mosaify = Mosaify.Mosaify()
-    #     mosaify.setTileSize(8)
-    #     _id = 1
-    #     for path in glob.glob("input/tile.input/*.jpg"):
-    #         mosaify.addTile(_id, path)
-    #         _id = _id + 1
-
-    #     # self.assertTrue(mosaify.generate("input/target.jpg"))
-
-    #     # s = mosaify.getMosaicPath()
-    #     # print(s)
-        
+                image = mosaify.getMosaicPreviewImage()
+                image.show()
+            except RuntimeError as e:
+                self.assertTrue(False)
+            except:
+                self.assertTrue(False)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,17 @@
 import platform
 import tempfile
 import uuid
+import time
+
+def time_it(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Function '{func.__name__}' took {elapsed_time:.4f} seconds to run.")
+        return result
+    return wrapper
 
 def isDarwin():
 	return "Darwin" == platform.uname().system
@@ -14,11 +25,16 @@ if isDarwin():
 	from MosaifyPy_Darwin import Image
 	from MosaifyPy_Darwin import ImageFileLoader
 	from MosaifyPy_Darwin import getMosaicPreviewPath as _getMosaicPreviewPath
+	from MosaifyPy_Darwin import getMosaicTilePreviewPath as _getMosaicTilePreviewPath
+	from MosaifyPy_Darwin import getMosaicPath as _getMosaicPath
 
 if isLinux():
 	from MosaifyPy_Linux import Mosaify
 	from MosaifyPy_Linux import Image
 	from MosaifyPy_Linux import ImageFileLoader
+	from MosaifyPy_Linux import getMosaicPreviewPath as _getMosaicPreviewPath
+	from MosaifyPy_Linux import getMosaicTilePreviewPath as _getMosaicTilePreviewPath
+	from MosaifyPy_Linux import getMosaicPath as _getMosaicPath
 
 # from PIL import Image
 from PIL import Image as PILImage
@@ -101,7 +117,7 @@ class MosaifyPy:
 		return self.mosaic.getTileSize()
 
 	def getMosaicTilePreviewPath(self, _id):
-		return _getMosaicPreviewPath(self.mosaic)
+		return _getMosaicTilePreviewPath(self.mosaic, _id)
 
 	def getTileImage(self, _id):
 		path = self.getMosaicTilePreviewPath(_id)
@@ -109,6 +125,7 @@ class MosaifyPy:
 		os.remove(path)
 		return image
 
+	@time_it
 	def generate(self, width, height, comp, imgdata):
 		return self.mosaic.generate(width, height, comp, imgdata)
 
@@ -118,7 +135,7 @@ class MosaifyPy:
 		return json.dumps(d, indent=4)
 
 	def getMosaicPreviewPath(self):
-		return getMosaicPreviewPath()
+		return _getMosaicPreviewPath(self.mosaic)
 
 	def getMosaicPreviewImage(self):
 		path = self.getMosaicPreviewPath()
@@ -130,6 +147,6 @@ class MosaifyPy:
 		return self.mosaic.getMosaicJsonArray()
 
 	def getMosaicPath(self):
-		return getMosaicPath()
+		return _getMosaicPath(self.mosaic)
 
 
