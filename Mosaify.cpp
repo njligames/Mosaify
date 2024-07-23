@@ -425,7 +425,7 @@ bool Mosaify::generate(int width,
     vector<Mosaify::TileImage> images;
     // Have to resized the tiles so that it can be tiled correctly.
     int i = 0;
-    std::cerr << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
+    std::cerr << "Memory usage Before: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
     for(auto iter = mTileImages.begin(); iter != mTileImages.end(); iter++) {
 
         try
@@ -448,9 +448,9 @@ bool Mosaify::generate(int width,
             throw std::runtime_error(std::string("exception caught"));
         }
 
-        std::cerr << "Image " << i++ << " of " << mTileImages.size() << std::endl;
+//        std::cerr << "Image " << i++ << " of " << mTileImages.size() << std::endl;
 
-        std::cerr << "\tMemory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
+//        std::cerr << "\tMemory usage After: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
 
         // Wait a bit to ensure system updates the memory info
 //        std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -467,7 +467,7 @@ bool Mosaify::generate(int width,
     }
 
     delete targetImage;
-    std::cerr << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
+    std::cerr << "Memory usage After: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
 
     return true;
 }
@@ -487,10 +487,10 @@ const char *Mosaify::getMosaicMap()const {
 
         // create a JSON object for the pair and add it to the JSON array
         j.push_back({
-                            {"x", indices.first},
-                            {"y", indices.second},
-                            {"id", tid}
-                    });
+            {"x", indices.first},
+            {"y", indices.second},
+            {"id", tid}
+        });
     }
 
     if(j.empty()) return ret.c_str();

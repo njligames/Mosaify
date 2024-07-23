@@ -16,41 +16,28 @@ using namespace std;
 #include <Board.h>
 
 const char * getMosaicPath(const Mosaify &mosaify){
-
     LibBoard::Board board;
-//    static string svg_path = string(fs::temp_directory_path()) + string("image.svg");
     static string svg_path = string(std::getenv("TMPDIR") + string("/image.svg"));
     Mosaify::MosaicMap map;
     mosaify.getMosaicMap(map);
     int tileSize = 1;//mosaify.getTileSize();
-
     NJLIC::Image *mimg = new NJLIC::Image();
     mosaify.getMosaicImage(*mimg);
-
     int targetWidth = mimg->getWidth();
     int targetHeight = mimg->getHeight();
     int ncols = targetWidth / mosaify.getTileSize();
     int nrows = targetHeight / mosaify.getTileSize();
-
     delete mimg;
-
     for (const auto& pair : map) {
         Mosaify::Indices indices = pair.first;
         Mosaify::TileId tid = pair.second;
-
-//        string path = string(fs::temp_directory_path()) + to_string(tid) + string(".png");
         string path = string(std::getenv("TMPDIR") + string("/") + to_string(tid) + string(".png"));
         NJLIC::Image *img = new NJLIC::Image();
         mosaify.getTileImage(tid, *img);
-
-        int dim = mosaify.getMaxWidth();
-        if(dim > mosaify.getMaxHeight())
-            dim = mosaify.getMaxHeight();
-        img->resize(dim, dim);
-
+        auto roi = mosaify.getTileROI(1);
+        img->clip(glm::vec2(roi.x, roi.y), roi.width, roi.height);
         ImageFileLoader::write(path, img);
         delete img;
-
         int x = indices.first;
         int y = indices.second;
         LibBoard::Image image(path.c_str(), x * tileSize, (ncols - y) * tileSize, tileSize);
