@@ -2748,3 +2748,16 @@ TEST(HelloTest, Generate) {
 
     delete mosaic;
 }
+TEST(HelloTest, Roi) {
+    Mosaify *mosaify = new Mosaify();
+    string path("/Users/jamesfolk/Work/MosaicImageCreator/example/input/tile.input/Photo on 9-7-18 at 9.09 AM #3.jpg");
+    const NJLIC::Image *tile = ImageFileLoader::load(path);
+    mosaify->addTileImage(tile->getWidth(), tile->getHeight(), tile->getNumberOfComponents(), (uint8*)tile->getDataPtr(), path.c_str(), 1);
+    auto roi = mosaify->getTileROI(1);
+    NJLIC::Image *img = new NJLIC::Image(tile->clip(roi.x, roi.y, roi.width, roi.height));
+    static string path2 = string("/Users/jamesfolk" + string("/") + to_string(rand()) + string(".png"));
+    ImageFileLoader::write(path2, img);
+    cout << path2;
+    delete img;
+    delete mosaify;
+}

@@ -72,13 +72,15 @@ const char * getMosaicPreviewPath(const Mosaify &mosaify){
 }
 
 const char * getMosaicTilePreviewPath(const Mosaify &mosaify, Mosaify::TileId _id){
-//    static string path = string(fs::temp_directory_path()) + to_string(rand()) + string(".png");
     static string path = string(std::getenv("TMPDIR") + string("/") + to_string(rand()) + string(".png"));
+
     NJLIC::Image *img = new NJLIC::Image();
-    if(!mosaify.getTileImage(_id, *img)) {
-       img->generate(mosaify.getTileSize(), mosaify.getTileSize(), 3);
+    if(mosaify.getTileImage(_id, *img)) {
+        auto roi = mosaify.getTileROI(1);
+        NJLIC::Image *tile = new NJLIC::Image(img->clip(roi.x, roi.y, roi.width, roi.height));
+        ImageFileLoader::write(path, tile);
+        delete tile;
     }
-    ImageFileLoader::write(path, img);
 
     delete img;
     return path.c_str();

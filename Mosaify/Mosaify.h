@@ -20,6 +20,26 @@ public:
     static void write(const string &filename, const NJLIC::Image *img);
 };
 
+struct RegionOfInterest{
+    RegionOfInterest() = delete;
+
+    RegionOfInterest(int xRegion, int yRegion, int widthRegion, int heightRegion) : x(xRegion), y(yRegion), width(widthRegion), height(heightRegion) {
+    }
+
+    // Parameterized constructor to create a square region centered within the image
+    RegionOfInterest(int imageWidth, int imageHeight)
+            : width(std::min(imageWidth, imageHeight)), height(std::min(imageWidth, imageHeight)) {
+        // Calculate the center position
+        x = (imageWidth - width) / 2;
+        y = (imageHeight - height) / 2;
+    }
+
+    int x = 0;
+    int y = 0;
+    int width = 0;
+    int height = 0;
+};
+
 class Mosaify {
 public:
     typedef long long int TileId;
@@ -29,8 +49,10 @@ public:
     typedef pair<Indices, TileId> MosaicMapPair;
 
     typedef pair<TileId, NJLIC::Image*> TileImage;
+    typedef pair<TileId, RegionOfInterest> TileROI;
 private:
     vector<TileImage> mTileImages;
+    vector<TileROI> mTileROIs;
     uint8 mTileSize;
     int mMaxHeight;
     int mMaxWidth;
@@ -70,6 +92,9 @@ public:
                          uint8 *data,
                          const char *filepath,
                          TileId id);
+
+    bool updateTileROI( int x, int y, int width, int height, TileId id);
+    RegionOfInterest getTileROI( TileId id)const;
 
     bool generate(int width,
                   int height,

@@ -44,15 +44,14 @@ import json
 
 class Image:
 	def __pil_image(self, path):
-	    im = PILImage.open(path)
-	    im = im.convert('RGBA')
+		im = PILImage.open(path)
+		im = im.convert('RGBA')
+		cols,rows = im.size
+		s = im.tobytes() # Must keep a reference
+		imgdata = s
+		comp = 4
 
-	    cols,rows = im.size
-	    s = im.tobytes() # Must keep a reference
-	    imgdata = s
-	    comp = 4
-
-	    return cols, rows, comp, imgdata
+		return cols, rows, comp, imgdata
 
 	def __init__(self):
 		self.image = None

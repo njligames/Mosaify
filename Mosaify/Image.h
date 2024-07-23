@@ -271,6 +271,7 @@ namespace NJLIC {
         void resize(int width, int height);
         Image resize(int width, int height)const;
 
+        void clip(const glm::vec2 &position, int width, int height);
         Image &clip(int x, int y, int width, int height)const;
 //        Image &clip(const glm::vec2 &position, int width, int height)const;
 

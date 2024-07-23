@@ -229,30 +229,31 @@ namespace NJLIC {
     bool Image::copyData(void *dataPtr, int width, int height, int components,
                          const std::string &filename) {
         if (dataPtr != NULL) {
-            m_RawDataSize = ((width) * (height) * (components));
 
             try
             {
+                m_RawDataSize = ((width) * (height) * (components));
                 if (m_RawData)
-                    delete[] m_RawData;
+                    delete [] m_RawData;
                 m_RawData = new unsigned char[m_RawDataSize];
+
+                memcpy(m_RawData, dataPtr, m_RawDataSize);
+
+                assert(width >= 0 && width <= 4096);
+                m_Width = width;
+
+                assert(height >= 0 && height <= 4096);
+                m_Height = height;
+
+                assert(components >= 0 && components <= 4);
+                m_Componenents = components;
+                m_Filename = filename;
             }
             catch (std::bad_alloc & ba)
             {
+                std::cerr << std::string("bad_alloc caught: ") + std::string(ba.what()) << std::endl;
                 throw std::runtime_error(std::string("bad_alloc caught: ") + std::string(ba.what()));
             }
-
-            memcpy(m_RawData, dataPtr, m_RawDataSize);
-
-            assert(width >= 0 && width <= 4096);
-            m_Width = width;
-
-            assert(height >= 0 && height <= 4096);
-            m_Height = height;
-
-            assert(components >= 0 && components <= 4);
-            m_Componenents = components;
-            m_Filename = filename;
 
             return true;
         }
@@ -815,19 +816,14 @@ namespace NJLIC {
         return img;
     }
 
-    Image &Image::clip(int x, int y, int width, int height)const {
-        static Image img;
+    void Image::clip(const glm::vec2 &position, int width, int height) {
+        Image img;
+        int x = position.x;
+        int y = position.y;
 
         img.generate(width, height, getNumberOfComponents(),  glm::vec4(1.0f, 1.0f, 1.0f,
                                                                         1.0f));
-        auto red = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-        img.setPixel(glm::vec2(0, 0), red);
-        img.setPixel(glm::vec2(0, height-1), red);
-        img.setPixel(glm::vec2(width-1, 0), red);
-        img.setPixel(glm::vec2(width-1, height-1), red);
-
-        // Check if the coordinates and dimensions are within the bounds of the image
         if (!(x < 0 || y < 0 || x + width > getWidth() || y + height > getHeight()) ){
             for(int xTo = 0, xOffset = x; xTo < width; xTo++, xOffset++) {
                 for(int yTo = 0, yOffset = y; yTo < height; yTo++, yOffset++) {
@@ -835,14 +831,13 @@ namespace NJLIC {
                     img.setPixel(glm::vec2(xTo, yTo), pixel);
                 }
             }
-//            // Copy the region of interest (ROI) into the output image
-//            for (int j = 0; j < width; ++j, ++x) {
-//                for (int i = 0; i < height; ++i, ++y) {
-//                    auto pixel = getPixel(glm::vec2(x, y));
-//                    img.setPixel(glm::vec2(i, j), pixel);
-//                }
-//            }
         }
+        *this = img;
+    }
+    Image &Image::clip(int x, int y, int width, int height)const {
+        static Image img(*this);
+
+        img.clip(glm::vec2(x, y), width, height);
 
         return img;
     }

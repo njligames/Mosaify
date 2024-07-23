@@ -284,6 +284,9 @@ void Mosaify::addTileImage(int width,
     if(width > mMaxWidth)mMaxWidth=width;
     if(height > mMaxHeight)mMaxHeight=height;
     mTileImages.push_back(TileImage(id, img));
+
+    auto roi = RegionOfInterest(width, height);
+    mTileROIs.push_back(TileROI(id, roi));
 }
 
 bool Mosaify::removeTileImage(TileId id) {
@@ -294,6 +297,17 @@ bool Mosaify::removeTileImage(TileId id) {
             ret = true;
         } else {
             iter++;
+        }
+    }
+    if(ret) {
+        ret = false;
+        for(auto iter = mTileROIs.begin(); iter != mTileROIs.end();) {
+            if((*iter).first == id) {
+                iter = mTileROIs.erase(iter);
+                ret = true;
+            } else {
+                iter++;
+            }
         }
     }
     return ret;
@@ -344,8 +358,45 @@ bool Mosaify::updateTileImage(int width,
             iter++;
         }
     }
+    if(ret) {
+        ret = false;
+        for(auto iter = mTileROIs.begin(); iter != mTileROIs.end();) {
+            if((*iter).first == id) {
+                (*iter).second = RegionOfInterest(width, height);
+                ret = true;
+            } else {
+                iter++;
+            }
+        }
+
+    }
     return ret;
 
+}
+
+bool Mosaify::updateTileROI( int x, int y, int width, int height, TileId id) {
+    bool ret = false;
+    for(auto iter = mTileROIs.begin(); iter != mTileROIs.end();) {
+        if((*iter).first == id) {
+            (*iter).second = RegionOfInterest(x, y, width, height);
+
+            ret = true;
+        } else {
+            iter++;
+        }
+    }
+    return ret;
+}
+
+RegionOfInterest Mosaify::getTileROI( TileId id)const {
+    for(auto iter = mTileROIs.begin(); iter != mTileROIs.end();) {
+        if((*iter).first == id) {
+            return ((*iter).second);
+        } else {
+            iter++;
+        }
+    }
+    return RegionOfInterest(0, 0, 0, 0);
 }
 
 bool Mosaify::generate(int width,
@@ -381,6 +432,11 @@ bool Mosaify::generate(int width,
         {
             NJLIC::Image *img = new NJLIC::Image(*((*iter).second));
             TileId id = (*iter).first;
+
+            auto roi = getTileROI(id);
+
+            // TODO: test
+            *img = img->clip(roi.x, roi.y, roi.width, roi.height);
 
             img->resize(mTileSize, mTileSize);
             images.push_back(Mosaify::TileImage(id, img));
