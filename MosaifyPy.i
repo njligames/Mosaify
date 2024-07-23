@@ -77,9 +77,8 @@ const char * getMosaicTilePreviewPath(const Mosaify &mosaify, Mosaify::TileId _i
     NJLIC::Image *img = new NJLIC::Image();
     if(mosaify.getTileImage(_id, *img)) {
         auto roi = mosaify.getTileROI(1);
-        NJLIC::Image *tile = new NJLIC::Image(img->clip(roi.x, roi.y, roi.width, roi.height));
-        ImageFileLoader::write(path, tile);
-        delete tile;
+        img->clip(glm::vec2(roi.x, roi.y), roi.width, roi.height);
+        ImageFileLoader::write(path, img);
     }
 
     delete img;
