@@ -433,11 +433,12 @@ bool Mosaify::generate(int width,
             NJLIC::Image *img = new NJLIC::Image(*((*iter).second));
             TileId id = (*iter).first;
 
-            auto roi = getTileROI(1);
+            auto roi = getTileROI(id);
             img->clip(glm::vec2(roi.x, roi.y), roi.width, roi.height);
             img->resize(mTileSize, mTileSize);
 
             images.push_back(Mosaify::TileImage(id, img));
+
         }
         catch (std::bad_alloc & ba)
         {
