@@ -126,23 +126,26 @@ static std::string extractPath(const std::string &filepath) {
 }
 
 // Define a function to calculate the similarity between two images
-static double calculateSimilarity(const NJLIC::Image *target, int image1OffsetX, int image1OffsetY, int image1SizeX, int image1SizeY,
+static double calculateSimilarity(const NJLIC::Image *target, int image1OffsetX, int image1OffsetY, int tileSize, int patchSize,
                                   const NJLIC::Image *image) {
     int sum = 0;
     for (int y = 0; y < image->getHeight(); y++) {
         for (int x = 0; x < image->getWidth(); x++) {
 
-            glm::vec4 pixel1;
-            image->getPixel(glm::vec2(x, y), pixel1);
-            NJLIC::Color color1;
-            color1.setRGB(pixel1);
+            glm::vec4 pixel;
+            NJLIC::Color tileColor;
+            NJLIC::Color targetColor;
 
-            glm::vec4 pixel2;
-            target->getPixel(glm::vec2(x + image1OffsetX, y + image1OffsetY), pixel2);
-            NJLIC::Color color2;
-            color2.setRGB(pixel2);
+            image->getPixel(glm::vec2(x, y), pixel);
+            tileColor.setRGB(pixel);
 
-            int diff = color1.distance(color2);
+            int xPos = image1OffsetX + x;//Mosaify::scaleNumber(patchSize, tileSize, x);
+            int yPos = image1OffsetY + y;//Mosaify::scaleNumber(patchSize, tileSize, y);
+
+            target->getPixel(glm::vec2(xPos, yPos), pixel);
+            targetColor.setRGB(pixel);
+
+            int diff = tileColor.distance(targetColor);
 
             sum += diff * diff;
         }
@@ -154,7 +157,7 @@ static double calculateSimilarity(const NJLIC::Image *target, int image1OffsetX,
 }
 
 // Define a function to generate a mosaic image
-static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int numThreads, Mosaify::MosaicMap &mmap) {
+static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int patchSize, int numThreads, Mosaify::MosaicMap &mmap) {
     int targetWidth = targetImage->getWidth();
     int targetHeight = targetImage->getHeight();
     int tileCols = targetWidth / tileSize;
@@ -175,7 +178,7 @@ static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vecto
                 int tileX = tileCol * tileSize;
                 int tileY = tileRow * tileSize;
 
-                double similarity = calculateSimilarity(targetImage, tileX, tileY, tileSize, tileSize, images[i].second);
+                double similarity = calculateSimilarity(targetImage, tileX, tileY, tileSize, patchSize, images[i].second);
                 similarityScores[i][j] = similarity;
             }
         }
@@ -213,7 +216,10 @@ static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vecto
 
             creationMutex.lock();
             mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex].second);
-            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(tileX / tileSize, tileY / tileSize), images[bestMatchIndex].first));
+
+            int x = (tileX / tileSize);
+            int y = (tileY / tileSize);
+            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(x, y), images[bestMatchIndex].first));
             creationMutex.unlock();
         }
     };
@@ -249,6 +255,7 @@ const NJLIC::Image *Mosaify::resizeImage(const NJLIC::Image *img)const {
 
 Mosaify::Mosaify() :
 mTileSize(8),
+mPatchSize(8),
 mMaxHeight(0),
 mMaxWidth(0),
 mMosaicImage(new NJLIC::Image())
@@ -271,6 +278,14 @@ void Mosaify::setTileSize(int tileSize) {
 
 int Mosaify::getTileSize()const {
     return mTileSize;
+}
+
+void Mosaify::setPatchSize(int size) {
+    mPatchSize = size;
+}
+
+int Mosaify::getPatchSize()const {
+    return mPatchSize;
 }
 
 void Mosaify::addTileImage(int width,
@@ -458,7 +473,7 @@ bool Mosaify::generate(int width,
     }
     mMosaicMap.clear();
 
-    *mMosaicImage = generateMosaic(targetImage, images, mTileSize, numThreads, mMosaicMap);
+    *mMosaicImage = generateMosaic(targetImage, images, mTileSize, mPatchSize, numThreads, mMosaicMap);
     std::cerr << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
 
     while(!images.empty()) {
@@ -552,4 +567,15 @@ const char *Mosaify::getMosaicJsonArray()const {
 
 void Mosaify::getMosaicMap(Mosaify::MosaicMap &map)const {
     map = mMosaicMap;
+}
+
+int Mosaify::scaleNumber(double scaleMax, double inputMax, double inputNumber) {
+    // Check to avoid division by zero
+    if (inputMax == 0) {
+        std::cerr << "Error: inputMax cannot be zero." << std::endl;
+        return 0; // or handle error appropriately
+    }
+    // Scale the input number
+    double scaledNumber = (inputNumber / inputMax) * scaleMax;
+    return static_cast<int>(std::round(scaledNumber));
 }

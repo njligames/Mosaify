@@ -67,7 +67,8 @@ class TestCalculations(unittest.TestCase):
 
     # def test_generate_image_preview(self):
     #     mosaify = MosaifyPy()
-    #     mosaify.setTileSize(8)
+    #     mosaify.setTileSize(1)
+    #     mosaify.setPatchSize(8)
     #     _id = 1
     #     for path in glob.glob("input/tile.input/*.jpg"):
     #         mosaify.addTile(_id, path)
@@ -103,6 +104,7 @@ class TestCalculations(unittest.TestCase):
     def test_generate_image(self):
         mosaify = MosaifyPy()
         mosaify.setTileSize(8)
+        mosaify.setTileSize(8)
         _id = 1
         for path in glob.glob("input/tile.input/*.jpg"):
             mosaify.addTile(_id, path)
@@ -116,18 +118,9 @@ class TestCalculations(unittest.TestCase):
             try:
                 success = mosaify.generate(rows, cols, comps, data)
                 self.assertTrue(success)
-
-                # s = mosaify.getMosaicJsonArray()
-                # print(s)
-
-                # s = mosaify.getMosaicMap()
-                # print(s)
-
                 s = mosaify.getMosaicPath()
                 print(s)
-
-                # image = mosaify.getMosaicPreviewImage()
-                # image.show()
+                self.assertTrue(True)
             except RuntimeError as e:
                 print("error")
                 self.assertTrue(False)

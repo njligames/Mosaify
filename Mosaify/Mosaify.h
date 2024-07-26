@@ -54,6 +54,7 @@ private:
     vector<TileImage> mTileImages;
     vector<TileROI> mTileROIs;
     uint8 mTileSize;
+    uint8 mPatchSize;
     int mMaxHeight;
     int mMaxWidth;
 
@@ -73,6 +74,9 @@ public:
 
     void setTileSize(int tileSize);
     int getTileSize()const;
+
+    void setPatchSize(int size);
+    int getPatchSize()const;
 
     void addTileImage(int width,
                         int height,
@@ -107,6 +111,7 @@ public:
     const char *getMosaicJsonArray()const;
 
     void getMosaicMap(MosaicMap &vec)const;
+    static int scaleNumber(double scaleMax, double inputMax, double inputNumber) ;
 };
 
 #endif //MOSAICIMAGECREATOR_LIBRARY_H

@@ -113,6 +113,12 @@ class Mosaify(object):
     def getTileSize(self):
         return _MosaifyPy_Darwin.Mosaify_getTileSize(self)
 
+    def setPatchSize(self, size):
+        return _MosaifyPy_Darwin.Mosaify_setPatchSize(self, size)
+
+    def getPatchSize(self):
+        return _MosaifyPy_Darwin.Mosaify_getPatchSize(self)
+
     def addTileImage(self, width, height, components, data, filepath, id):
         return _MosaifyPy_Darwin.Mosaify_addTileImage(self, width, height, components, data, filepath, id)
 
@@ -145,6 +151,10 @@ class Mosaify(object):
 
     def getMosaicMap(self, *args):
         return _MosaifyPy_Darwin.Mosaify_getMosaicMap(self, *args)
+
+    @staticmethod
+    def scaleNumber(scaleMax, inputMax, inputNumber):
+        return _MosaifyPy_Darwin.Mosaify_scaleNumber(scaleMax, inputMax, inputNumber)
 
 # Register Mosaify in _MosaifyPy_Darwin:
 _MosaifyPy_Darwin.Mosaify_swigregister(Mosaify)

@@ -17,7 +17,7 @@ using namespace std;
 
 const char * getMosaicPath(const Mosaify &mosaify){
     LibBoard::Board board;
-    static string svg_path = string(std::getenv("TMPDIR") + string("/image.svg"));
+    static string svg_path = string(std::getenv("TMPDIR") + string("/image_") + to_string(rand()) + string(".svg"));
     Mosaify::MosaicMap map;
     mosaify.getMosaicMap(map);
     int tileSize = 1;//mosaify.getTileSize();

@@ -2748,6 +2748,7 @@ TEST(HelloTest, Generate) {
 
     delete mosaic;
 }
+
 TEST(HelloTest, Roi) {
     Mosaify *mosaify = new Mosaify();
     string path("/Users/jamesfolk/Work/MosaicImageCreator/example/input/tile.input/Photo on 9-7-18 at 9.09 AM #3.jpg");
@@ -2760,4 +2761,68 @@ TEST(HelloTest, Roi) {
     cout << path2;
     delete img;
     delete mosaify;
+}
+
+TEST(HelloTest, Scale1to8) {
+    double patchSize;
+    double tileSize;
+
+    patchSize = 1.0;
+    tileSize = 8.0;
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 0), 0);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 1), 0);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 2), 0);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 3), 0);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 4), 1);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 5), 1);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 6), 1);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 7), 1);
+}
+
+TEST(HelloTest, Scale1to2) {
+    double patchSize;
+    double tileSize;
+
+    patchSize = 4.0;
+    tileSize = 8.0;
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 0), 0);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 1), 1);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 2), 1);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 3), 2);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 4), 2);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 5), 3);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 6), 3);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 7), 4);
+}
+
+TEST(HelloTest, Scale1to1) {
+    double patchSize;
+    double tileSize;
+
+    patchSize = 8.0;
+    tileSize = 8.0;
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 0), 0);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 1), 1);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 2), 2);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 3), 3);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 4), 4);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 5), 5);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 6), 6);
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 7), 7);
+}
+
+TEST(HelloTest, Scale2to1) {
+    double patchSize;
+    double tileSize;
+
+    patchSize = 16.0;
+    tileSize = 8.0;
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 0), 0); // 0 in the patch size
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 1), 2); // 2 in the patch size
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 2), 4); // 4 in the patch size
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 3), 6); // 6 in the patch size
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 4), 8); // 8 in the patch size
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 5), 10); // 10 in the patch size
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 6), 12); // 12 in the patch size
+    ASSERT_EQ(Mosaify::scaleNumber(patchSize, tileSize, 7), 14); // 14 in the patch size
 }
