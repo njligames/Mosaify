@@ -21,23 +21,21 @@ const char * getMosaicPath(const Mosaify &mosaify){
     Mosaify::MosaicMap map;
     mosaify.getMosaicMap(map);
     int tileSize = 1;//mosaify.getTileSize();
-    NJLIC::Image *mimg = new NJLIC::Image();
-    mosaify.getMosaicImage(*mimg);
-    int targetWidth = mimg->getWidth();
-    int targetHeight = mimg->getHeight();
+    NJLIC::Image mimg;
+    mosaify.getMosaicImage(mimg);
+    int targetWidth = mimg.getWidth();
+    int targetHeight = mimg.getHeight();
     int ncols = targetWidth / mosaify.getTileSize();
     int nrows = targetHeight / mosaify.getTileSize();
-    delete mimg;
     for (const auto& pair : map) {
         Mosaify::Indices indices = pair.first;
         Mosaify::TileId tid = pair.second;
         string path = string(std::getenv("TMPDIR") + string("/") + to_string(tid) + string(".png"));
-        NJLIC::Image *img = new NJLIC::Image();
-        mosaify.getTileImage(tid, *img);
-        auto roi = mosaify.getTileROI(1);
-        img->clip(glm::vec2(roi.x, roi.y), roi.width, roi.height);
-        ImageFileLoader::write(path, img);
-        delete img;
+        NJLIC::Image img;
+        mosaify.getTileImage(tid, img);
+        auto roi = mosaify.getTileROI(tid);
+        img.clip(glm::vec2(roi.x, roi.y), roi.width, roi.height);
+        ImageFileLoader::write(path, &img);
         int x = indices.first;
         int y = indices.second;
         LibBoard::Image image(path.c_str(), x * tileSize, (ncols - y) * tileSize, tileSize);
@@ -48,12 +46,10 @@ const char * getMosaicPath(const Mosaify &mosaify){
 }
 
 const char * getMosaicPreviewPath(const Mosaify &mosaify){
-//    static string path = string(fs::temp_directory_path()) + to_string(rand()) + string(".png");
     static string path = string(std::getenv("TMPDIR") + string("/") + to_string(rand()) + string(".png"));
     NJLIC::Image *img = new NJLIC::Image();
     mosaify.getMosaicImage(*img);
     ImageFileLoader::write(path, img);
-
     delete img;
     return path.c_str();
 }
@@ -62,8 +58,9 @@ const char * getMosaicTilePreviewPath(const Mosaify &mosaify, Mosaify::TileId _i
     static string path = string(std::getenv("TMPDIR") + string("/") + to_string(rand()) + string(".png"));
 
     NJLIC::Image *img = new NJLIC::Image();
+
     if(mosaify.getTileImage(_id, *img)) {
-        auto roi = mosaify.getTileROI(1);
+        auto roi = mosaify.getTileROI(_id);
         img->clip(glm::vec2(roi.x, roi.y), roi.width, roi.height);
         ImageFileLoader::write(path, img);
     }

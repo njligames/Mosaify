@@ -139,8 +139,8 @@ static double calculateSimilarity(const NJLIC::Image *target, int image1OffsetX,
             image->getPixel(glm::vec2(x, y), pixel);
             tileColor.setRGB(pixel);
 
-            int xPos = image1OffsetX + x;//Mosaify::scaleNumber(patchSize, tileSize, x);
-            int yPos = image1OffsetY + y;//Mosaify::scaleNumber(patchSize, tileSize, y);
+            int xPos = image1OffsetX + Mosaify::scaleNumber(patchSize, tileSize, x);
+            int yPos = image1OffsetY + Mosaify::scaleNumber(patchSize, tileSize, y);
 
             target->getPixel(glm::vec2(xPos, yPos), pixel);
             targetColor.setRGB(pixel);
