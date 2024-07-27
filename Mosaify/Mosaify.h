@@ -21,7 +21,7 @@ public:
 };
 
 struct RegionOfInterest{
-    RegionOfInterest() = delete;
+    RegionOfInterest();
 
     RegionOfInterest(int xRegion, int yRegion, int widthRegion, int heightRegion) : x(xRegion), y(yRegion), width(widthRegion), height(heightRegion) {
     }
