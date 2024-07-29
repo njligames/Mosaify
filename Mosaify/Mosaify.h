@@ -20,8 +20,9 @@ public:
     static void write(const string &filename, const NJLIC::Image *img);
 };
 
-struct RegionOfInterest{
-    RegionOfInterest();
+class RegionOfInterest{
+public:
+    RegionOfInterest(){}
 
     RegionOfInterest(int xRegion, int yRegion, int widthRegion, int heightRegion) : x(xRegion), y(yRegion), width(widthRegion), height(heightRegion) {
     }
