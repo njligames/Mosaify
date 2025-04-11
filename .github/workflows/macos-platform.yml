@@ -11,7 +11,7 @@ env:
   
 jobs:
   update_submodule:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
 
       - name: Install ImageMagick
