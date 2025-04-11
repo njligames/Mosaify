@@ -43,6 +43,8 @@ target_include_directories(Mosaify
         ${GLM_INCLUDE_DIRS}
 )
 
+set(MOSAIFY_INCLUDE ${CMAKE_SOURCE_DIR})
+
 target_link_libraries(
         Mosaify
         PRIVATE
@@ -51,6 +53,7 @@ target_link_libraries(
         # ImageMagick::Magick++
         ${ImageMagick_LIBRARIES}
 )
+set(MOSAIFY_LIBS Mosaify)
 
 # MosaifyPy
 #include(FindSWIG)

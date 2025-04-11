@@ -1,5 +1,8 @@
 # Mosaify
 
+## VERSION
+v1.0.2 - Exposed libraries and headers.
+
 ## Table of Contents
 
  - [About](#about)
