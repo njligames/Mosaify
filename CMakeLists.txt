@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.17.0)
 project(Mosaify)
+
+# Testing Mosaify target
+include(FetchContent)
+
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     SET(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH "My Comment" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -12,10 +16,22 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH "/System/Volumes/Data/usr/local/Cellar/cmake/3.27.7/share/cmake/Modules/")
 
-# Mosaify target
 add_subdirectory(glm)
-add_subdirectory(json)
-add_subdirectory(libboard)
+
+FetchContent_Declare(
+        json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.12.0
+)
+FetchContent_MakeAvailable(json)
+
+FetchContent_Declare(
+        libboard
+        GIT_REPOSITORY https://github.com/c-koi/libboard.git
+        GIT_TAG v0.9.6
+)
+FetchContent_MakeAvailable(libboard)
+
 find_package(ImageMagick REQUIRED COMPONENTS Magick++)
 add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
 target_include_directories(Mosaify
@@ -57,8 +73,6 @@ target_link_libraries(
         ${Python3_LIBRARIES}
 )
 
-# Testing Mosaify target
-include(FetchContent)
 
 FetchContent_Declare(
         googletest
@@ -69,6 +83,7 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+
 enable_testing()
 add_executable(
         hello_test
