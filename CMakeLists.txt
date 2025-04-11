@@ -18,19 +18,21 @@ set(CMAKE_MODULE_PATH "/System/Volumes/Data/usr/local/Cellar/cmake/3.27.7/share/
 
 add_subdirectory(glm)
 
-FetchContent_Declare(
-        json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG v3.12.0
-)
-FetchContent_MakeAvailable(json)
+add_subdirectory(json)
+#FetchContent_Declare(
+#        json
+#        GIT_REPOSITORY https://github.com/nlohmann/json.git
+#        GIT_TAG v3.12.0
+#)
+#FetchContent_MakeAvailable(json)
 
-FetchContent_Declare(
-        libboard
-        GIT_REPOSITORY https://github.com/c-koi/libboard.git
-        GIT_TAG v0.9.6
-)
-FetchContent_MakeAvailable(libboard)
+add_subdirectory(libboard)
+#FetchContent_Declare(
+#        libboard
+#        GIT_REPOSITORY https://github.com/c-koi/libboard.git
+#        GIT_TAG v0.9.6
+#)
+#FetchContent_MakeAvailable(libboard)
 
 find_package(ImageMagick REQUIRED COMPONENTS Magick++)
 add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
