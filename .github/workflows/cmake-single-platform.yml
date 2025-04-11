@@ -14,9 +14,29 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: true
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true # Make sure to check out the sub-module
+
+      - name: Update submodule
+        run: |
+          git submodule update --init --recursive
+          git submodule update --remote --recursive
+
+      - name: Check if changes were made
+        id: check_changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes were made."
+          else
+            echo "Changes were made."
+            git config user.email "actions@github.com"
+            git config user.name "GitHub Actions - update submodules"
+            git add .
+            git commit -m 'Update submodule'
+            git push
+          fi
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
