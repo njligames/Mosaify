@@ -36,9 +36,13 @@ jobs:
             git commit -m 'Update submodule'
             git push
           fi
+          
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-  
+
+      - name: Install ImageMagick
+        run: sudo apt update && sudo apt install libmagick++-dev
+        
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
   
