@@ -14,6 +14,9 @@ jobs:
     runs-on: macos-latest
     steps:
 
+      - name: Install SWIG
+        run: brew install swig
+
       - name: Install ImageMagick
         run: brew install imagemagick
 
