@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17.0)
-project(Mosaify)
+project(Mosaify VERSION 1.0.3)
 
 # Testing Mosaify target
 include(FetchContent)
@@ -37,9 +37,15 @@ add_subdirectory(json)
 #FetchContent_MakeAvailable(libboard)
 
 add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
+#target_include_directories(Mosaify
+#        PUBLIC
+#        ${CMAKE_SOURCE_DIR}           # Assuming Mosaify.h and Image.h are here
+#        ${GLM_INCLUDE_DIRS}
+#)
 target_include_directories(Mosaify
         PUBLIC
-        ${CMAKE_SOURCE_DIR}           # Assuming Mosaify.h and Image.h are here
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include>
         ${GLM_INCLUDE_DIRS}
 )
 

@@ -1,7 +1,17 @@
 # Mosaify
 
 ## VERSION
-v1.0.2 - Exposed libraries and headers.
+v1.0.3 - Exposed libraries and headers.
+
+## Create Release
+```bash
+ VERSION=v1.0.3
+ git add .
+ git commit -m "Release ${VERSION}"
+ git push
+ git tag -a ${VERSION} -m "Release ${VERSION}"
+ git push origin ${VERSION}
+```
 
 ## Table of Contents
 
