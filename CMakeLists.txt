@@ -38,10 +38,11 @@ add_subdirectory(json)
 
 add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
 target_include_directories(Mosaify
-        INTERFACE public
-#        PUBLIC details_public
+        PUBLIC
+        ${CMAKE_SOURCE_DIR}           # Assuming Mosaify.h and Image.h are here
+        ${GLM_INCLUDE_DIRS}
+)
 
-        PRIVATE ${GLM_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR} )
 target_link_libraries(
         Mosaify
         PRIVATE
@@ -113,10 +114,16 @@ install(TARGETS Mosaify hello_test
 #set(CMAKE_INSTALL_PYTHON_LIBDIR "${CMAKE_SOURCE_DIR}/example")
 #install(TARGETS MosaifyPy_${CMAKE_SYSTEM_NAME} DESTINATION ${CMAKE_SOURCE_DIR}/example)
 
-FILE(WRITE ${CMAKE_BINARY_DIR}/Mosaify/example/main.py
-        "# Python code example\n"
-        "import MosaifyPy\n"
-        "t = MosaifyPy.Mosaify()\n"
-        "t.setTileSize(8)\n"
-)
+#FILE(WRITE ${CMAKE_BINARY_DIR}/Mosaify/example/main.py
+#        "# Python code example\n"
+#        "import MosaifyPy\n"
+#        "t = MosaifyPy.Mosaify()\n"
+#        "t.setTileSize(8)\n"
+#)
+
+install(FILES
+        ${CMAKE_SOURCE_DIR}/Mosaify/Mosaify.h
+        ${CMAKE_SOURCE_DIR}/Mosaify/Image.h
+        DESTINATION Mosaify/include/Mosaify)
+
 
