@@ -44,9 +44,8 @@ add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
 #)
 target_include_directories(Mosaify
         PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR} ${GLM_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/glm>
         $<INSTALL_INTERFACE:include>
-        ${GLM_INCLUDE_DIRS}
 )
 
 set(MOSAIFY_INCLUDE ${CMAKE_SOURCE_DIR})
