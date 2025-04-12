@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17.0)
-project(Mosaify VERSION 1.0.4)
+project(Mosaify VERSION 1.0.7)
 
 # Testing Mosaify target
 include(FetchContent)
@@ -44,7 +44,8 @@ add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
 #)
 target_include_directories(Mosaify
         PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/glm>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/glm>
         $<INSTALL_INTERFACE:include>
 )
 
