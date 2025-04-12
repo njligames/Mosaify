@@ -1,7 +1,7 @@
 # Mosaify
 
 ## VERSION
-v1.0.5 - Exposed libraries and headers.
+v1.0.6 - Exposed libraries and headers.
 
 ## Create Release
 ```bash
