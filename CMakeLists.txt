@@ -36,7 +36,7 @@ add_subdirectory(json)
 #)
 #FetchContent_MakeAvailable(libboard)
 
-add_library(Mosaify STATIC Image.cpp Mosaify.cpp Color.cpp)
+add_library(Mosaify SHARED Image.cpp Mosaify.cpp Color.cpp)
 #target_include_directories(Mosaify
 #        PUBLIC
 #        ${CMAKE_SOURCE_DIR}           # Assuming Mosaify.h and Image.h are here
