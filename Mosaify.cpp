@@ -157,13 +157,14 @@ static double calculateSimilarity(const NJLIC::Image *target, int image1OffsetX,
 }
 
 // Define a function to generate a mosaic image
-static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int patchSize, int numThreads, Mosaify::MosaicMap &mmap) {
+static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int patchSize, int scale, int numThreads, Mosaify::MosaicMap &mmap) {
     int targetWidth = targetImage->getWidth();
     int targetHeight = targetImage->getHeight();
     int tileCols = targetWidth / tileSize;
     int tileRows = targetHeight / tileSize;
 
     static NJLIC::Image mosaicPixels(*targetImage);
+    mosaicPixels.generate(targetImage->getWidth() * scale, targetImage->getHeight() * scale, targetImage->getNumberOfComponents());
 
     // Create a vector to hold the similarity scores
     vector<vector<double>> similarityScores(images.size(), vector<double>(tileCols * tileRows));
@@ -215,7 +216,7 @@ static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vecto
             }
 
             creationMutex.lock();
-            mosaicPixels.setPixels(glm::vec2(tileX, tileY), images[bestMatchIndex].second);
+            mosaicPixels.setPixels(glm::vec2(tileX * scale, tileY * scale), images[bestMatchIndex].second);
 
             int x = (tileX / tileSize);
             int y = (tileY / tileSize);
@@ -254,6 +255,7 @@ const NJLIC::Image *Mosaify::resizeImage(const NJLIC::Image *img)const {
 }
 
 Mosaify::Mosaify() :
+        mFinalMosaicScale(1),
 mTileSize(8),
 mPatchSize(8),
 mMaxHeight(0),
@@ -270,6 +272,14 @@ Mosaify::~Mosaify() {
         delete img;
         mTileImages.pop_back();
     }
+}
+
+void Mosaify::setFinalMosaicScale(int scale) {
+    mFinalMosaicScale = scale;
+}
+
+int Mosaify::getFinalMosaicScale() const {
+   return mFinalMosaicScale;
 }
 
 void Mosaify::setTileSize(int tileSize) {
@@ -450,7 +460,7 @@ bool Mosaify::generate(int width,
 
             auto roi = getTileROI(id);
             img->clip(glm::vec2(roi.x, roi.y), roi.width, roi.height);
-            img->resize(mTileSize, mTileSize);
+            img->resize(mTileSize * mFinalMosaicScale, mTileSize * mFinalMosaicScale);
 
             images.push_back(Mosaify::TileImage(id, img));
 
@@ -473,7 +483,7 @@ bool Mosaify::generate(int width,
     }
     mMosaicMap.clear();
 
-    *mMosaicImage = generateMosaic(targetImage, images, mTileSize, mPatchSize, numThreads, mMosaicMap);
+    *mMosaicImage = generateMosaic(targetImage, images, mTileSize, mPatchSize, mFinalMosaicScale, numThreads, mMosaicMap);
     std::cerr << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
 
     while(!images.empty()) {

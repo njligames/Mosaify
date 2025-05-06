@@ -54,6 +54,7 @@ public:
 private:
     vector<TileImage> mTileImages;
     vector<TileROI> mTileROIs;
+    int mFinalMosaicScale;
     uint8 mTileSize;
     uint8 mPatchSize;
     int mMaxHeight;
@@ -72,6 +73,8 @@ public:
     int getMaxHeight()const{return mMaxHeight;}
 
 
+    void setFinalMosaicScale(int scale);
+    int getFinalMosaicScale() const;
 
     void setTileSize(int tileSize);
     int getTileSize()const;
