@@ -46,14 +46,17 @@ public:
     typedef long long int TileId;
 
     typedef pair<unsigned int, unsigned int> Indices;
-    typedef map<Indices, TileId> MosaicMap;
-    typedef pair<Indices, TileId> MosaicMapPair;
 
     typedef pair<TileId, NJLIC::Image*> TileImage;
     typedef pair<TileId, RegionOfInterest> TileROI;
+    typedef pair<TileId, int> TileUse;
+
+    typedef map<Indices, TileROI> MosaicMap;
+    typedef pair<Indices, TileROI> MosaicMapPair;
 private:
     vector<TileImage> mTileImages;
     vector<TileROI> mTileROIs;
+    vector<TileUse> mTileUses;
     int mFinalMosaicScale;
     uint8 mTileSize;
     uint8 mPatchSize;
@@ -103,6 +106,13 @@ public:
 
     bool updateTileROI( int x, int y, int width, int height, TileId id);
     RegionOfInterest getTileROI( TileId id)const;
+    void getTileROIs(vector<TileROI> &rois)const;
+
+    void resetTileUse(TileId id);
+    void increaseTileUse(TileId id);
+    void decreaseTileUse(TileId id);
+    int totalTileUse(TileId id)const;
+    bool tileUsed(TileId id)const;
 
     bool generate(int width,
                   int height,
@@ -112,7 +122,6 @@ public:
     void getMosaicImage(NJLIC::Image &img)const;
 
     const char *getMosaicMap()const;
-    const char *getMosaicJsonArray()const;
 
     void getMosaicMap(MosaicMap &vec)const;
     static int scaleNumber(double scaleMax, double inputMax, double inputNumber) ;

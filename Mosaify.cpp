@@ -157,7 +157,7 @@ static double calculateSimilarity(const NJLIC::Image *target, int image1OffsetX,
 }
 
 // Define a function to generate a mosaic image
-static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int patchSize, int scale, int numThreads, Mosaify::MosaicMap &mmap) {
+static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int patchSize, int scale, int numThreads, Mosaify::MosaicMap &mmap, vector<Mosaify::TileUse> &tileUses, vector<Mosaify::TileROI> tileROIs ) {
     int targetWidth = targetImage->getWidth();
     int targetHeight = targetImage->getHeight();
     int tileCols = targetWidth / tileSize;
@@ -216,11 +216,24 @@ static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vecto
             }
 
             creationMutex.lock();
+
             mosaicPixels.setPixels(glm::vec2(tileX * scale, tileY * scale), images[bestMatchIndex].second);
 
             int x = (tileX / tileSize);
             int y = (tileY / tileSize);
-            mmap.insert(Mosaify::MosaicMapPair(Mosaify::Indices(x, y), images[bestMatchIndex].first));
+            auto indice = Mosaify::Indices(x, y);
+
+            auto tileUseIter = std::find(tileUses.begin(), tileUses.end(), indice);
+            tileUseIter->second++;
+
+            for(auto tile_roi : tileROIs) {
+                if(tile_roi.first == tileUseIter->first) {
+                    auto roi = tile_roi.second;
+                    auto tileId = images[bestMatchIndex].first;
+                    mmap.insert(Mosaify::MosaicMapPair(indice, Mosaify::TileROI(tileId, roi)));
+                }
+            }
+
             creationMutex.unlock();
         }
     };
@@ -312,6 +325,8 @@ void Mosaify::addTileImage(int width,
 
     auto roi = RegionOfInterest(width, height);
     mTileROIs.push_back(TileROI(id, roi));
+
+    mTileUses.push_back(TileUse(id, 0));
 }
 
 bool Mosaify::removeTileImage(TileId id) {
@@ -329,6 +344,18 @@ bool Mosaify::removeTileImage(TileId id) {
         for(auto iter = mTileROIs.begin(); iter != mTileROIs.end();) {
             if((*iter).first == id) {
                 iter = mTileROIs.erase(iter);
+                ret = true;
+            } else {
+                iter++;
+            }
+        }
+    }
+
+    if(ret) {
+        ret = false;
+        for(auto iter = mTileUses.begin(); iter != mTileUses.end();) {
+            if((*iter).first == id) {
+                iter = mTileUses.erase(iter);
                 ret = true;
             } else {
                 iter++;
@@ -424,6 +451,33 @@ RegionOfInterest Mosaify::getTileROI( TileId id)const {
     return RegionOfInterest(0, 0, 0, 0);
 }
 
+void Mosaify::getTileROIs(vector<TileROI> &rois)const {
+    rois.clear();
+    std::copy(mTileROIs.begin(), mTileROIs.end(), rois.begin());
+}
+
+int Mosaify::totalTileUse(TileId id)const {
+    for(auto iter = mTileUses.begin(); iter != mTileUses.end();) {
+        if((*iter).first == id) {
+            return ((*iter).second);
+        } else {
+            iter++;
+        }
+    }
+    return 0;
+}
+
+bool Mosaify::tileUsed(TileId id)const {
+    for(auto iter = mTileUses.begin(); iter != mTileUses.end();) {
+        if((*iter).first == id) {
+            return ((*iter).second) > 0;
+        } else {
+            iter++;
+        }
+    }
+    return false;
+}
+
 bool Mosaify::generate(int width,
                        int height,
                        int components,
@@ -483,7 +537,8 @@ bool Mosaify::generate(int width,
     }
     mMosaicMap.clear();
 
-    *mMosaicImage = generateMosaic(targetImage, images, mTileSize, mPatchSize, mFinalMosaicScale, numThreads, mMosaicMap);
+    *mMosaicImage = generateMosaic(targetImage, images, mTileSize, mPatchSize, mFinalMosaicScale, numThreads, mMosaicMap, mTileUses, mTileROIs);
+
     std::cerr << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
 
     while(!images.empty()) {
@@ -509,13 +564,23 @@ const char *Mosaify::getMosaicMap()const {
     // iterate through the MosaicMap and add each pair to the JSON object
     for (const auto& pair : mMosaicMap) {
         Indices indices = pair.first;
-        TileId tid = pair.second;
+        TileId tid = pair.second.first;
+        RegionOfInterest roi = pair.second.second;
+
 
         // create a JSON object for the pair and add it to the JSON array
         j.push_back({
             {"x", indices.first},
             {"y", indices.second},
-            {"id", tid}
+            {"id", tid},
+            {"roi",
+                {
+                    {"width", roi.width},
+                    {"height", roi.height},
+                    {"x", roi.x},
+                    {"y", roi.y}
+                }
+            }
         });
     }
 
@@ -523,56 +588,6 @@ const char *Mosaify::getMosaicMap()const {
 
     ret = j.dump();
     return ret.c_str();
-}
-
-const char *Mosaify::getMosaicJsonArray()const {
-    int targetWidth = mMosaicImage->getWidth();
-    int targetHeight = mMosaicImage->getHeight();
-    int cols = targetWidth / getTileSize();
-    int rows = targetHeight / getTileSize();
-
-    std::vector<std::vector<std::string>> grid;
-    grid.resize(rows);
-    for(int i = 0; i < rows; i++) {
-        grid[i].resize(cols);
-    }
-
-    for (const auto& pair : mMosaicMap) {
-        Indices indices = pair.first;
-        TileId tid = pair.second;
-
-        grid[indices.second][indices.first] = tid;
-    }
-
-    int i = 0;
-    static string val = "[";
-    for(i = 0; i < grid.size()-1; i++) {
-
-        string fileName;
-        int j = 0;
-        string string_row = "[";
-        for(j = 0; j < grid[i].size()-1; j++) {
-            fileName = grid[i][j];
-            string_row += string("\"") + fileName + string("\", ");
-        }
-        string_row += string("\"") + fileName + string("\"");
-        string_row += "],\n";
-        val += string_row;
-    }
-
-    string fileName;
-    int j = 0;
-    string string_row = "[";
-    for(j = 0; j < grid[i].size()-1; j++) {
-        fileName = grid[i][j];
-        string_row += string("\"") + fileName + string("\", ");
-    }
-    string_row += string("\"") + fileName + string("\"");
-    string_row += "]\n";
-    val += string_row;
-    val += string("]");
-
-    return val.c_str();
 }
 
 void Mosaify::getMosaicMap(Mosaify::MosaicMap &map)const {
