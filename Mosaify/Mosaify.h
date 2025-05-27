@@ -65,6 +65,7 @@ private:
 
     MosaicMap mMosaicMap;
     NJLIC::Image *mMosaicImage;
+    uint32_t mMaxTimesUsed;
 
     const NJLIC::Image *resizeImage(const NJLIC::Image *img)const;
 public:
@@ -74,6 +75,9 @@ public:
 
     int getMaxWidth()const{return mMaxWidth;}
     int getMaxHeight()const{return mMaxHeight;}
+
+    int getMaxTimesUsed()const{return mMaxTimesUsed;}
+    void setMaxTimesUsed(const uint32_t m){mMaxTimesUsed = m;}
 
 
     void setFinalMosaicScale(int scale);

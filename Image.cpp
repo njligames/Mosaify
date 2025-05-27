@@ -190,6 +190,7 @@ namespace NJLIC {
                 toPos = glm::vec2(x, y) + position;
 
                 if (fromImage->getPixel(fromPos, pixel)) {
+                    pixel.a = 1.0f;
                     if (!setPixel(toPos, pixel)) {
                         //                        SDL_LogError(SDL_LOG_CATEGORY_TEST,
                         //                                     "error writing

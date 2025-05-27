@@ -157,7 +157,7 @@ static double calculateSimilarity(const NJLIC::Image *target, int image1OffsetX,
 }
 
 // Define a function to generate a mosaic image
-static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int patchSize, int scale, int numThreads, Mosaify::MosaicMap &mmap, vector<Mosaify::TileUse> &tileUses, vector<Mosaify::TileROI> tileROIs ) {
+static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vector<Mosaify::TileImage> &images, int tileSize, int patchSize, int scale, int numThreads, Mosaify::MosaicMap &mmap, vector<Mosaify::TileUse> &tileUses, vector<Mosaify::TileROI> tileROIs, uint32_t max_times_used ) {
     int targetWidth = targetImage->getWidth();
     int targetHeight = targetImage->getHeight();
     int tileCols = targetWidth / tileSize;
@@ -167,7 +167,7 @@ static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vecto
     mosaicPixels.generate(targetImage->getWidth() * scale, targetImage->getHeight() * scale, targetImage->getNumberOfComponents());
 
     // Create a vector to hold the similarity scores
-    vector<vector<double>> similarityScores(images.size(), vector<double>(tileCols * tileRows));
+    vector<vector<double>> similarityScores(images.size(), vector<double>(tileCols * tileRows, std::numeric_limits<double>::max()));
 
     // Define a function to calculate the similarity scores in parallel
     auto calculateSimilarityScores = [&](int threadIndex) {
@@ -204,12 +204,20 @@ static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vecto
             int tileX = tileCol * tileSize;
             int tileY = tileRow * tileSize;
 
+
+            int x = (tileX / tileSize);
+            int y = (tileY / tileSize);
+            auto indice = Mosaify::Indices(x, y);
+
+
             // Find the best matching image for the tile
             int bestMatchIndex = 0;
             int bestMatchScore = similarityScores[0][j];
             for (int i = 1; i < images.size(); i++) {
                 int similarity = similarityScores[i][j];
-                if (similarity < bestMatchScore) {
+
+
+                if (similarity < bestMatchScore && tileUses[i].second <= max_times_used) {
                     bestMatchIndex = i;
                     bestMatchScore = similarity;
                 }
@@ -219,11 +227,13 @@ static const NJLIC::Image &generateMosaic(const NJLIC::Image *targetImage, vecto
 
             mosaicPixels.setPixels(glm::vec2(tileX * scale, tileY * scale), images[bestMatchIndex].second);
 
-            int x = (tileX / tileSize);
-            int y = (tileY / tileSize);
-            auto indice = Mosaify::Indices(x, y);
+            Mosaify::TileId tidToFind = images[bestMatchIndex].first;
 
-            auto tileUseIter = std::find(tileUses.begin(), tileUses.end(), indice);
+            auto tileUseIter = std::find_if(tileUses.begin(), tileUses.end(),
+                                   [&tidToFind](const Mosaify::TileUse& tileUse) {
+                                       return tileUse.first == tidToFind;
+                                   });
+
             tileUseIter->second++;
 
             for(auto tile_roi : tileROIs) {
@@ -268,12 +278,13 @@ const NJLIC::Image *Mosaify::resizeImage(const NJLIC::Image *img)const {
 }
 
 Mosaify::Mosaify() :
-        mFinalMosaicScale(1),
-mTileSize(8),
-mPatchSize(8),
-mMaxHeight(0),
-mMaxWidth(0),
-mMosaicImage(new NJLIC::Image())
+    mFinalMosaicScale(1),
+    mTileSize(8),
+    mPatchSize(8),
+    mMaxHeight(0),
+    mMaxWidth(0),
+    mMosaicImage(new NJLIC::Image()),
+    mMaxTimesUsed(std::numeric_limits<uint32_t>::max())
 {
     mMosaicImage->generate(mTileSize, mTileSize, 3);
 }
@@ -537,7 +548,7 @@ bool Mosaify::generate(int width,
     }
     mMosaicMap.clear();
 
-    *mMosaicImage = generateMosaic(targetImage, images, mTileSize, mPatchSize, mFinalMosaicScale, numThreads, mMosaicMap, mTileUses, mTileROIs);
+    *mMosaicImage = generateMosaic(targetImage, images, mTileSize, mPatchSize, mFinalMosaicScale, numThreads, mMosaicMap, mTileUses, mTileROIs, mMaxTimesUsed);
 
     std::cerr << "Memory usage: " << formatWithSIUnit(getMemoryUsage()) << std::endl;
 
