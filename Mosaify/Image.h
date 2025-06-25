@@ -155,6 +155,29 @@ namespace NJLIC {
         unsigned char *getDataPtr() const;
         long getDataSize() const;
 
+        // Setters
+        void setFilename(const std::string& filename) {
+            m_Filename = filename;
+        }
+        void setHeight(int rows) {
+            m_Height = rows;
+        }
+        void setWidth(int cols) {
+            m_Width = cols;
+        }
+        void setNumberOfComponents(int comps) {
+            m_Componenents = comps;
+        }
+        void setData(const std::vector<unsigned char>& data) {
+//            this->data = data;
+            if (m_RawData)
+                delete[] m_RawData;
+            long s = getNumberOfComponents() * getWidth() * getHeight();
+            long s1 = data.size();
+            m_RawData = new unsigned char[data.size()];
+            memcpy(m_RawData, data.data(), data.size());
+            m_RawDataSize = data.size();
+        }
         /**
          *  <#Description#>
          *
