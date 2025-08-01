@@ -12,6 +12,7 @@
 #include "glm/glm.hpp"
 #include <string>
 #include <vector>
+#include <cstring>
 
 namespace NJLIC {
 
