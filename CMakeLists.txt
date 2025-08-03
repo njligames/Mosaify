@@ -131,8 +131,8 @@ install(TARGETS Mosaify hello_test
 #)
 
 install(FILES
-        ${CMAKE_SOURCE_DIR}/Mosaify/Mosaify.h
-        ${CMAKE_SOURCE_DIR}/Mosaify/Image.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/Mosaify/Mosaify.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/Mosaify/Image.h
         DESTINATION Mosaify/include/Mosaify)
 
 
