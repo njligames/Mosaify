@@ -1,5 +1,6 @@
 # Mosaify
-
+[![MacOS](https://github.com/njligames/Mosaify/actions/workflows/macos-platform.yml/badge.svg)](https://github.com/njligames/Mosaify/actions/workflows/macos-platform.yml)  
+[![Ubuntu](https://github.com/njligames/Mosaify/actions/workflows/ubuntu-platform.yml/badge.svg)](https://github.com/njligames/Mosaify/actions/workflows/ubuntu-platform.yml)  
 ## VERSION
 v1.0.7 - Exposed libraries and headers.
 
