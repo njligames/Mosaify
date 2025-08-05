@@ -21,13 +21,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        submodules:true
-
-    - name: Update submodule
-      run: |
-        git submodule update --init --recursive
-        git submodule update --remote --recursive
 
     - name: Extract version from CMakeLists.txt
       id: version
@@ -35,11 +28,19 @@ jobs:
         VERSION=$(sed -nE 's/^project\([^)]*VERSION[[:space:]]+([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' CMakeLists.txt)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-    - name: Install SWIG
-      run: brew install swig
+    - name: Install asio
+      run: brew install asio
 
-    - name: Install ImageMagick
-      run: brew install imagemagick
+    - name: Install crow dependencies
+      run: |
+        git clone https://github.com/CrowCpp/Crow.git
+        cd Crow
+        mkdir build && cd build
+        cmake ..
+        sudo make install
+
+    - name: Install cpr
+      run: brew install cpr
 
     - name: Install nlohmann-json
       run: brew install nlohmann-json
@@ -51,13 +52,18 @@ jobs:
       run: brew install boost
 
     - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=install
 
     - name: Build
+      # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test
       working-directory: ${{github.workspace}}/build
+      # Execute tests defined by the CMake configuration.
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: Install
